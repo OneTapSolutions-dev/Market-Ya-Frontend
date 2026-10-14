@@ -1,0 +1,6 @@
+<ui-packs-table
+  [products]="store.products()"
+  [packs]="packs()"
+  (packSaved)="onPackSaved($event)"
+  (packDeleted)="onPackDeleted($event)"
+/>

@@ -1,0 +1,55 @@
+<ui-modal [(open)]="open" title="Trasladar Mercadería: Almacén → Góndola" size="md">
+  @if (product(); as prod) {
+    <div class="space-y-4 text-xs">
+      <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+        <h4 class="font-extrabold text-slate-900 text-sm">{{ prod.name }}</h4>
+        <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-500 font-mono">
+          <span>SKU: {{ prod.sku }}</span>
+          <span>•</span>
+          <span class="font-bold text-slate-700">Stock Almacén: {{ prod.stockAlmacen }} unds</span>
+          <span>•</span>
+          <span class="font-bold text-teal-700">Stock Góndola: {{ prod.stockGondola }} unds</span>
+        </div>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Cantidad a Trasladar</label>
+        <ui-input
+          type="number"
+          placeholder="Cantidad en unidades"
+          [(value)]="quantity"
+        />
+        <span class="block text-[11px] text-slate-400 mt-1">
+          Máximo disponible en almacén: {{ prod.stockAlmacen }} unidades.
+        </span>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Motivo / Observaciones</label>
+        <ui-input
+          type="text"
+          placeholder="Ej: Reposición de góndola principal"
+          [(value)]="notes"
+        />
+      </div>
+    </div>
+  }
+
+  @if (product(); as prod) {
+    <div modal-actions class="flex items-center justify-end gap-2 w-full">
+      <ui-button variant="ghost" (clicked)="open.set(false)">
+        Cancelar
+      </ui-button>
+      <ui-button
+        variant="primary"
+        [disabled]="quantity() <= 0 || quantity() > prod.stockAlmacen"
+        (clicked)="confirm()"
+      >
+        <div class="flex items-center gap-1.5 font-extrabold">
+          <ui-icon name="arrowsRightLeft" size="1rem" />
+          <span>Confirmar Traslado</span>
+        </div>
+      </ui-button>
+    </div>
+  }
+</ui-modal>

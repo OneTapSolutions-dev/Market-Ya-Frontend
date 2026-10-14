@@ -1,0 +1,74 @@
+<div
+  role="button"
+  tabindex="0"
+  [attr.aria-disabled]="isOutOfStock()"
+  class="relative flex min-h-[7.5rem] sm:min-h-[8rem] flex-col justify-between rounded-xl sm:rounded-2xl border border-slate-200 bg-slate-50 p-2.5 sm:p-3 shadow-xs transition-all text-left group select-none"
+  [class.opacity-60]="isOutOfStock()"
+  [class.cursor-not-allowed]="isOutOfStock()"
+  [class.cursor-pointer]="!isOutOfStock()"
+  [class.hover:border-orange-300]="!isOutOfStock()"
+  [class.hover:bg-orange-50]="!isOutOfStock()"
+  [class]="customClass()"
+  (click)="!isOutOfStock() && cardClicked.emit()"
+  (keydown.enter)="!isOutOfStock() && cardClicked.emit()"
+  (keydown.space)="$event.preventDefault(); !isOutOfStock() && cardClicked.emit()"
+>
+  <div>
+    <div class="flex items-center justify-between text-[10px] text-slate-500 mb-1 font-bold">
+      <span class="truncate font-mono max-w-[80px]">{{ sku() }}</span>
+
+      <div class="flex items-center gap-1.5">
+        <span
+          [class]="isOutOfStock() ? 'text-rose-600 font-extrabold' : (isLowStock() ? 'text-amber-600 font-extrabold' : 'text-teal-700 font-extrabold')"
+        >
+          Góndola: {{ stockGondola() }}
+        </span>
+
+        <button
+          type="button"
+          [attr.aria-label]="'Ver detalle de ' + name()"
+          title="Ver detalle completo de producto y precios"
+          class="p-0.5 text-slate-400 hover:text-primary hover:bg-orange-100 rounded transition-colors cursor-pointer"
+          (click)="onDetail($event)"
+        >
+          <ui-icon name="informationCircle" size="1rem" />
+        </button>
+      </div>
+    </div>
+
+    <h3 class="line-clamp-2 text-xs font-extrabold text-slate-900 transition-colors group-hover:text-primary sm:text-sm">
+      {{ name() }}
+    </h3>
+  </div>
+
+  <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-200/80">
+    <div class="flex flex-col">
+      <span class="text-xs font-extrabold text-slate-900 font-mono">
+        S/ {{ salePrice() | number:'1.2-2' }}
+      </span>
+      @if (isPromo()) {
+        <span class="text-[9px] font-extrabold text-rose-600 flex items-center gap-0.5">
+          <ui-icon name="sparkles" size="0.75rem" class="text-rose-500" />
+          Promo
+        </span>
+      }
+    </div>
+
+    <div class="flex items-center gap-1.5">
+      <button
+        type="button"
+        class="inline-flex min-h-8 items-center gap-1 rounded-lg bg-slate-200/80 px-2 text-[10px] font-bold text-slate-700 transition-all hover:bg-orange-100 hover:text-orange-700 cursor-pointer"
+        (click)="onDetail($event)"
+      >
+        <ui-icon name="eye" size="0.75rem" />
+        <span>Detalle</span>
+      </button>
+
+      <span
+        class="w-7 h-7 rounded-xl bg-orange-100 text-primary flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all shadow-xs"
+      >
+        <ui-icon name="plus" size="1rem" />
+      </span>
+    </div>
+  </div>
+</div>

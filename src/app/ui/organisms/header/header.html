@@ -1,0 +1,213 @@
+<header class="bg-white/95 border-b border-slate-200/80 backdrop-blur-xl shadow-xs select-none sticky top-0 z-40">
+  <div class="max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-16">
+
+      <!-- Logo de Marca y Selector de Sede -->
+      <div class="flex items-center gap-4">
+        <a
+          [routerLink]="store.currentUser()?.role === 'admin' ? '/dashboard' : '/pos'"
+          class="flex items-center gap-3 cursor-pointer text-left focus:outline-none"
+          aria-label="Ir al panel principal"
+        >
+          <div class="w-12 h-10 rounded-xl bg-primary p-1 shadow-md shadow-orange-500/20 flex items-center justify-center">
+            <img
+              src="/logo.jpg"
+              alt="MarketYa"
+              class="w-full h-full object-contain rounded-lg bg-white p-0.5"
+              (error)="onLogoError($event)"
+            />
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-extrabold text-xl text-slate-900 tracking-tight">MarketYa!</span>
+            </div>
+            <p class="text-[11px] text-slate-500 font-bold">Control de Inventarios & POS</p>
+          </div>
+        </a>
+
+        <!-- Dropdown de Sede -->
+        <div class="hidden md:flex items-center gap-2 px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs text-slate-700 font-medium">
+          <ui-icon name="buildingStorefront" size="0.875rem" class="text-primary" />
+          <span class="font-bold text-slate-900">Sede Principal</span>
+          <ui-icon name="chevronDown" size="0.75rem" class="text-slate-400" />
+        </div>
+      </div>
+
+      <!-- Navegación de Módulos Desktop -->
+      <nav aria-label="Navegación principal" class="hidden xl:flex items-center gap-1.5">
+        @if (store.canAccess('dashboard')) {
+          <a
+            routerLink="/dashboard"
+            routerLinkActive="bg-primary text-white shadow-md shadow-orange-500/25"
+            [routerLinkActiveOptions]="{ exact: false }"
+            class="px-4 py-2 rounded-2xl text-xs font-extrabold text-slate-600 hover:text-primary hover:bg-orange-50 flex items-center gap-2 transition-all cursor-pointer"
+          >
+            <ui-icon name="squares2x2" size="1rem" />
+            <span>Dashboard</span>
+          </a>
+        }
+
+        @if (store.canAccess('pos')) {
+          <a
+            routerLink="/pos"
+            routerLinkActive="bg-primary text-white shadow-md shadow-orange-500/25"
+            class="px-4 py-2 rounded-2xl text-xs font-extrabold text-slate-600 hover:text-primary hover:bg-orange-50 flex items-center gap-2 transition-all cursor-pointer"
+          >
+            <ui-icon name="shoppingCart" size="1rem" />
+            <span>Gestión de Ventas</span>
+          </a>
+        }
+
+        <!-- Dropdown de Gestión de Productos (Admin) -->
+        @if (store.currentUser()?.role === 'admin') {
+          <div class="relative group">
+            <button
+              type="button"
+              class="px-4 py-2 rounded-2xl text-xs font-bold text-slate-600 hover:text-primary hover:bg-orange-50 flex items-center gap-2 transition-all cursor-pointer"
+            >
+              <ui-icon name="queueList" size="1rem" />
+              <span>Gestión Productos</span>
+              <ui-icon name="chevronDown" size="0.75rem" />
+            </button>
+
+            <div class="absolute left-0 top-full mt-2 w-56 bg-white border border-slate-200 rounded-2xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 flex flex-col py-2">
+              <a routerLink="/inventory" class="px-4 py-2.5 text-left text-xs font-bold text-slate-700 hover:bg-orange-50 hover:text-primary flex items-center gap-2">
+                <ui-icon name="buildingStorefront" size="1rem" /> Traslados y Kardex
+              </a>
+              <a routerLink="/units" class="px-4 py-2.5 text-left text-xs font-bold text-slate-700 hover:bg-orange-50 hover:text-primary flex items-center gap-2">
+                <ui-icon name="scale" size="1rem" /> Unidades de Medida
+              </a>
+              <a routerLink="/packs" class="px-4 py-2.5 text-left text-xs font-bold text-slate-700 hover:bg-orange-50 hover:text-primary flex items-center gap-2">
+                <ui-icon name="squaresPlus" size="1rem" /> Armado de Packs
+              </a>
+              <a routerLink="/movements" class="px-4 py-2.5 text-left text-xs font-bold text-slate-700 hover:bg-orange-50 hover:text-primary flex items-center gap-2">
+                <ui-icon name="documentText" size="1rem" /> Historial y Compras
+              </a>
+              <a routerLink="/expirations" class="px-4 py-2.5 text-left text-xs font-bold text-slate-700 hover:bg-orange-50 hover:text-primary flex items-center gap-2">
+                <ui-icon name="clock" size="1rem" /> Vencimientos
+              </a>
+              <a routerLink="/reports" class="px-4 py-2.5 text-left text-xs font-bold text-slate-700 hover:bg-orange-50 hover:text-primary flex items-center gap-2">
+                <ui-icon name="chartBar" size="1rem" /> Reportes
+              </a>
+            </div>
+          </div>
+        }
+
+        @if (store.canAccess('cash-closure')) {
+          <a
+            routerLink="/cash-closure"
+            routerLinkActive="bg-primary text-white shadow-md shadow-orange-500/25"
+            class="px-4 py-2 rounded-2xl text-xs font-extrabold text-slate-600 hover:text-primary hover:bg-orange-50 flex items-center gap-2 transition-all cursor-pointer"
+          >
+            <ui-icon name="currencyDollar" size="1rem" />
+            <span>Cierre de Caja</span>
+          </a>
+        }
+
+        @if (store.canAccess('electronic-documents')) {
+          <a
+            routerLink="/electronic-documents"
+            routerLinkActive="bg-primary text-white shadow-md shadow-orange-500/25"
+            class="px-4 py-2 rounded-2xl text-xs font-extrabold text-slate-600 hover:text-primary hover:bg-orange-50 flex items-center gap-2 transition-all cursor-pointer"
+          >
+            <ui-icon name="documentText" size="1rem" />
+            <span>Comprobantes (SUNAT)</span>
+          </a>
+        }
+      </nav>
+
+      <!-- Controles de Perfil y Notificaciones (Derecha) -->
+      <div class="flex items-center gap-1 sm:gap-3">
+        <!-- Botón Menú Móvil -->
+        <button
+          type="button"
+          class="inline-flex min-h-11 min-w-11 items-center justify-center rounded-xl text-slate-600 transition-colors hover:bg-orange-50 hover:text-primary xl:hidden cursor-pointer"
+          [attr.aria-expanded]="isMobileMenuOpen()"
+          aria-label="Alternar menú de navegación"
+          (click)="isMobileMenuOpen.update(v => !v)"
+        >
+          <ui-icon [name]="isMobileMenuOpen() ? 'close' : 'menu'" size="1.5rem" />
+        </button>
+
+        <!-- Campana de Notificaciones -->
+        <div class="relative">
+          <button
+            type="button"
+            class="p-2 text-slate-500 hover:bg-slate-100 rounded-full relative transition-colors cursor-pointer"
+            aria-label="Ver notificaciones"
+            (click)="toggleNotifications()"
+          >
+            <ui-icon name="bell" size="1.375rem" />
+            @if (store.unreadNotificationsCount() > 0) {
+              <span class="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[9px] font-extrabold flex items-center justify-center rounded-full border-2 border-white shadow-xs">
+                {{ store.unreadNotificationsCount() > 9 ? '9+' : store.unreadNotificationsCount() }}
+              </span>
+            }
+          </button>
+
+          <!-- Dropdown Notificaciones -->
+          @if (isNotificationsOpen()) {
+            <div class="absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col z-50">
+              <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50">
+                <h3 class="font-extrabold text-sm text-slate-900">Notificaciones</h3>
+                @if (store.appNotifications().length > 0) {
+                  <button
+                    type="button"
+                    (click)="store.markAllNotificationsAsRead()"
+                    class="text-[11px] font-bold text-primary hover:underline cursor-pointer"
+                  >
+                    Marcar todo leído
+                  </button>
+                }
+              </div>
+
+              <div class="max-h-[350px] overflow-y-auto">
+                @for (notif of store.appNotifications(); track notif.id) {
+                  <ui-notification-item
+                    [type]="notif.type"
+                    [title]="notif.title"
+                    [message]="notif.message"
+                    [timestamp]="notif.timestamp"
+                    [read]="notif.read"
+                    (itemClicked)="handleNotificationClick(notif)"
+                  />
+                } @empty {
+                  <div class="px-4 py-8 text-center text-slate-400 text-xs">
+                    No tienes notificaciones
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Usuario y Cerrar Sesión -->
+        <div class="flex items-center gap-3 pl-2 sm:pl-3 border-l border-slate-200">
+          <div class="flex items-center gap-2.5">
+            <ui-avatar [src]="store.currentUser()?.avatar" [alt]="store.currentUser()?.name || 'Usuario'" size="sm" />
+            <div class="hidden sm:block text-left">
+              <div class="text-xs font-extrabold text-slate-900 leading-tight">
+                {{ store.currentUser()?.name }}
+              </div>
+              <div class="text-[10px] font-bold text-primary uppercase">
+                {{ store.currentUser()?.role === 'admin' ? 'Administrador' : 'Cajero POS' }}
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            title="Cerrar Sesión"
+            aria-label="Cerrar sesión"
+            class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer"
+            (click)="logout()"
+          >
+            <ui-icon name="arrowLeftOnRectangle" size="1.125rem" />
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</header>

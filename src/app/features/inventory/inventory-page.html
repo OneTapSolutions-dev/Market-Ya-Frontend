@@ -1,0 +1,170 @@
+<div class="space-y-6 select-none">
+  <!-- Banner Superior -->
+  <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-orange-100 text-orange-700 border border-orange-200">
+          Doble Kardex
+        </span>
+        <span class="text-xs text-slate-500 font-mono font-bold">Control de Inventario & Logística Interna</span>
+      </div>
+      <h2 class="text-2xl font-extrabold text-slate-900">Gestión de Productos e Inventario</h2>
+      <p class="text-xs text-slate-500 mt-0.5 font-medium">
+        Consulta de stock físico en Almacén vs. Góndola y gestión de transferencias internas de reposición.
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2 flex-wrap">
+      <ui-button variant="outline" size="sm" (clicked)="store.loadProducts()">
+        <ui-icon name="arrowPath" size="1rem" class="text-slate-600" />
+        Actualizar Stock
+      </ui-button>
+      <ui-button variant="primary" size="sm" (clicked)="openAddProductModal()">
+        <ui-icon name="plus" size="1rem" />
+        Nuevo Producto
+      </ui-button>
+    </div>
+  </div>
+
+  <!-- Barra de Sub-Tabs -->
+  <div class="bg-white border border-slate-200 rounded-3xl p-2 shadow-sm flex flex-wrap gap-2">
+    <button
+      type="button"
+      (click)="activeSubTab.set('STOCK')"
+      [class]="activeSubTab() === 'STOCK'
+        ? 'flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer'
+        : 'flex-1 py-3 px-4 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs sm:text-sm border border-slate-200 flex items-center justify-center gap-2 transition-all cursor-pointer'"
+    >
+      <ui-icon name="buildingStorefront" size="1.1rem" />
+      <span>1. Movimiento de Almacén (Stock Kardex)</span>
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-mono" [class]="activeSubTab() === 'STOCK' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'">
+        {{ store.products().length }} ítems
+      </span>
+    </button>
+
+    <button
+      type="button"
+      (click)="activeSubTab.set('TRASLADOS')"
+      [class]="activeSubTab() === 'TRASLADOS'
+        ? 'flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-white font-extrabold text-xs sm:text-sm shadow-md shadow-orange-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer'
+        : 'flex-1 py-3 px-4 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs sm:text-sm border border-slate-200 flex items-center justify-center gap-2 transition-all cursor-pointer'"
+    >
+      <ui-icon name="arrowsRightLeft" size="1.1rem" />
+      <span>2. Historial de Traslados (Almacén → Góndola)</span>
+      <span class="px-2 py-0.5 rounded-full text-[10px] font-mono" [class]="activeSubTab() === 'TRASLADOS' ? 'bg-white/20 text-white' : 'bg-orange-100 text-orange-800 font-bold'">
+        {{ lowStockItems().length }} req.
+      </span>
+    </button>
+  </div>
+
+  <!-- Sub-Tab 1: Kardex de Productos -->
+  @if (activeSubTab() === 'STOCK') {
+    <ui-kardex-table
+      [products]="store.products()"
+      [categories]="store.categories()"
+      [loading]="store.isLoadingProducts()"
+      (transferRequested)="openTransferModal($event)"
+      (detailRequested)="openProductDetail($event)"
+    />
+  }
+
+  <!-- Sub-Tab 2: Traslados de Reposición -->
+  @if (activeSubTab() === 'TRASLADOS') {
+    <div class="space-y-6">
+      <!-- Ítems que requieren reposición urgente -->
+      <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+            <ui-icon name="exclamationTriangle" size="1.2rem" class="text-amber-500" />
+            <span>Productos que Requieren Reposición Inmediata</span>
+          </h3>
+          <span class="text-xs font-mono font-bold text-slate-500">{{ lowStockItems().length }} productos críticos</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+          @for (prod of lowStockItems(); track prod.id) {
+            <div class="border border-amber-200 bg-amber-50/50 rounded-2xl p-4 flex items-center justify-between">
+              <div>
+                <div class="font-extrabold text-xs text-slate-900">{{ prod.name }}</div>
+                <div class="text-[10px] text-slate-500 font-mono mt-0.5">
+                  Góndola: <strong class="text-rose-600">{{ prod.stockGondola }}</strong> / Min: {{ prod.minGondola }} • Almacén: <strong>{{ prod.stockAlmacen }}</strong>
+                </div>
+              </div>
+              <ui-button variant="warning" size="xs" (clicked)="openTransferModal(prod)">
+                Trasladar
+              </ui-button>
+            </div>
+          } @empty {
+            <div class="col-span-full py-8 text-center text-xs text-slate-400">
+              Todos los productos en góndola cuentan con stock suficiente.
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Historial de Traslados -->
+      <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+          <h3 class="text-base font-extrabold text-slate-900">Historial de Traslados Realizados</h3>
+          <span class="text-xs text-slate-500 font-mono">{{ store.stockTransfers().length }} registros</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-700">
+            <thead class="bg-slate-100 text-slate-600 font-extrabold border-b border-slate-200">
+              <tr>
+                <th class="py-3 px-4">Fecha / Hora</th>
+                <th class="py-3 px-4">Código</th>
+                <th class="py-3 px-4">Producto</th>
+                <th class="py-3 px-4 text-center">Cant. Trasladada</th>
+                <th class="py-3 px-4">Responsable</th>
+                <th class="py-3 px-4">Observaciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (trf of store.stockTransfers(); track trf.id) {
+                <tr class="hover:bg-slate-50/50">
+                  <td class="py-3 px-4 font-mono text-[11px] text-slate-500">{{ trf.timestamp }}</td>
+                  <td class="py-3 px-4 font-mono font-bold text-slate-900">{{ trf.id }}</td>
+                  <td class="py-3 px-4 font-bold text-slate-800">{{ trf.productName }}</td>
+                  <td class="py-3 px-4 text-center font-mono font-extrabold text-orange-600">+{{ trf.quantityMoved }}</td>
+                  <td class="py-3 px-4 text-slate-600">{{ trf.requestedBy }}</td>
+                  <td class="py-3 px-4 text-slate-500">{{ trf.notes }}</td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="py-8 text-center text-slate-400">No hay traslados registrados aún.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal Traslado de Stock -->
+  <ui-stock-transfer-modal
+    [open]="transferModalOpen()"
+    [product]="selectedProductForTransfer()"
+    (openChange)="transferModalOpen.set($event)"
+    (transferConfirmed)="onTransferConfirm($event)"
+  />
+
+  <!-- Modal Detalle de Producto -->
+  @if (selectedProductForDetail(); as prod) {
+    <ui-product-detail-modal
+      [open]="detailModalOpen()"
+      [product]="prod"
+      (openChange)="detailModalOpen.set($event)"
+    />
+  }
+
+  <!-- Modal Nuevo Producto -->
+  <ui-product-form-modal
+    [open]="productFormModalOpen()"
+    [categories]="store.categories()"
+    (openChange)="productFormModalOpen.set($event)"
+    (productCreated)="onProductCreated($event)"
+  />
+</div>

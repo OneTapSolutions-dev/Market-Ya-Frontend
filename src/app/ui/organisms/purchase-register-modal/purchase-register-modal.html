@@ -1,0 +1,196 @@
+<ui-modal [(open)]="open" title="Registrar Factura de Compra (Ingreso Almacén)" size="xl">
+  <div class="space-y-5 text-xs">
+    <!-- Cabecera de Compra -->
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+      <div>
+        <label for="purchaseSupplierInput" class="block font-bold text-slate-700 mb-1">
+          Proveedor <span class="text-rose-500">*</span>
+        </label>
+        <input
+          id="purchaseSupplierInput"
+          type="text"
+          [value]="supplierName()"
+          (input)="supplierName.set($any($event.target).value)"
+          placeholder="Ej. Arca Continental Lindley"
+          class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 font-medium focus:border-orange-500 focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label for="purchaseInvoiceNumInput" class="block font-bold text-slate-700 mb-1">
+          Nº de Factura <span class="text-rose-500">*</span>
+        </label>
+        <input
+          id="purchaseInvoiceNumInput"
+          type="text"
+          [value]="invoiceNumber()"
+          (input)="invoiceNumber.set($any($event.target).value)"
+          placeholder="Ej. F001-98210"
+          class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 font-mono font-bold text-slate-900 focus:border-orange-500 focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label for="purchasePaymentTypeSelect" class="block font-bold text-slate-700 mb-1">Condición de Pago</label>
+        <select
+          id="purchasePaymentTypeSelect"
+          [value]="paymentType()"
+          (change)="paymentType.set($any($event.target).value)"
+          class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none cursor-pointer"
+        >
+          <option value="CONTADO_EFECTIVO">Contado Efectivo</option>
+          <option value="CREDITO_30_DIAS">Crédito a 30 Días</option>
+          <option value="TRANSFERENCIA">Transferencia Bancaria</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="purchaseDateInput" class="block font-bold text-slate-700 mb-1">Fecha Emisión</label>
+        <input
+          id="purchaseDateInput"
+          type="date"
+          [value]="invoiceDate()"
+          (input)="invoiceDate.set($any($event.target).value)"
+          class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 font-mono text-slate-900 focus:border-orange-500 focus:outline-none"
+        />
+      </div>
+    </div>
+
+    <!-- Agregar Ítems -->
+    <div class="border border-slate-200 rounded-2xl p-4 bg-white space-y-3">
+      <h4 class="font-bold text-slate-900 uppercase text-[11px] tracking-wider">
+        Agregar Productos a la Factura
+      </h4>
+
+      <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
+        <div class="sm:col-span-5">
+          <label for="productSelectInput" class="block font-bold text-slate-700 mb-1">Producto</label>
+          <select
+            id="productSelectInput"
+            [value]="selectedProductId()"
+            (change)="onProductSelected($any($event.target).value)"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-orange-500 focus:outline-none cursor-pointer"
+          >
+            <option value="">-- Seleccionar producto del catálogo --</option>
+            @for (p of availableProducts(); track p.id) {
+              <option [value]="p.id">{{ p.name }} (Stock Alm: {{ p.stockAlmacen }})</option>
+            }
+          </select>
+        </div>
+
+        <div class="sm:col-span-2">
+          <label for="itemQtyInput" class="block font-bold text-slate-700 mb-1">Cantidad</label>
+          <input
+            id="itemQtyInput"
+            type="number"
+            min="1"
+            [value]="itemQuantity()"
+            (input)="itemQuantity.set(+$any($event.target).value)"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 font-mono font-bold text-slate-900 focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+
+        <div class="sm:col-span-2">
+          <label for="itemCostInput" class="block font-bold text-slate-700 mb-1">Costo Unit. (S/)</label>
+          <input
+            id="itemCostInput"
+            type="number"
+            step="0.01"
+            min="0"
+            [value]="itemCost()"
+            (input)="itemCost.set(+$any($event.target).value)"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 font-mono font-bold text-slate-900 focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+
+        <div class="sm:col-span-2">
+          <label for="itemExpDateInput" class="block font-bold text-slate-700 mb-1">F. Vencimiento</label>
+          <input
+            id="itemExpDateInput"
+            type="date"
+            [value]="itemExpDate()"
+            (input)="itemExpDate.set($any($event.target).value)"
+            class="w-full rounded-xl border border-slate-300 bg-white px-2 py-2 font-mono text-[11px] text-slate-900 focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+
+        <div class="sm:col-span-1">
+          <ui-button
+            variant="secondary"
+            size="sm"
+            [disabled]="!selectedProductId() || itemQuantity() <= 0 || itemCost() <= 0"
+            (clicked)="addItem()"
+          >
+            <ui-icon name="plus" size="1.1rem" />
+          </ui-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de Ítems Agregados -->
+    <div class="rounded-2xl border border-slate-200 overflow-hidden">
+      <table class="w-full text-left text-xs text-slate-700">
+        <thead class="bg-slate-100 text-slate-600 font-extrabold border-b border-slate-200">
+          <tr>
+            <th class="py-2.5 px-3">Producto</th>
+            <th class="py-2.5 px-3">Categoría</th>
+            <th class="py-2.5 px-3 text-center">Cantidad</th>
+            <th class="py-2.5 px-3 text-right">Costo Unit.</th>
+            <th class="py-2.5 px-3 text-right">Subtotal</th>
+            <th class="py-2.5 px-3 text-center">F. Vence</th>
+            <th class="py-2.5 px-3 text-center">Acción</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (item of items(); track $index) {
+            <tr>
+              <td class="py-2.5 px-3 font-extrabold text-slate-900">{{ item.productName }}</td>
+              <td class="py-2.5 px-3 text-slate-500">{{ item.category }}</td>
+              <td class="py-2.5 px-3 text-center font-mono font-bold">{{ item.quantity }}</td>
+              <td class="py-2.5 px-3 text-right font-mono">S/ {{ item.unitCost | number: '1.2-2' }}</td>
+              <td class="py-2.5 px-3 text-right font-mono font-extrabold text-slate-900">
+                S/ {{ item.totalCost | number: '1.2-2' }}
+              </td>
+              <td class="py-2.5 px-3 text-center font-mono text-[11px]">{{ item.expirationDate }}</td>
+              <td class="py-2.5 px-3 text-center">
+                <button
+                  type="button"
+                  (click)="removeItem($index)"
+                  class="text-rose-500 hover:text-rose-700 p-1"
+                >
+                  <ui-icon name="trash" size="1rem" />
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="7" class="py-8 text-center text-slate-400">
+                Agrega productos a la compra usando el selector superior.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <div class="bg-slate-50 border-t border-slate-200 p-4 flex items-center justify-between">
+        <span class="text-xs font-extrabold uppercase text-slate-600">Total Factura Proveedor</span>
+        <span class="font-mono text-xl font-extrabold text-slate-900">
+          S/ {{ totalCost() | number: '1.2-2' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div slot="footer" class="flex items-center justify-end gap-2">
+    <ui-button variant="ghost" size="sm" (clicked)="cancel()">Cancelar</ui-button>
+    <ui-button
+      variant="primary"
+      size="sm"
+      [disabled]="!invoiceNumber().trim() || !supplierName().trim() || items().length === 0"
+      (clicked)="savePurchase()"
+    >
+      <ui-icon name="plus" size="1rem" />
+      Registrar Compra e Incrementar Stock
+    </ui-button>
+  </div>
+</ui-modal>

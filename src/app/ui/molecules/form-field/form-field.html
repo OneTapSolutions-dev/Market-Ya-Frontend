@@ -1,0 +1,22 @@
+<div class="flex flex-col gap-1 w-full" [class]="customClass()">
+  @if (label()) {
+    <label [attr.for]="htmlFor() || null" class="text-xs font-bold text-slate-700 flex items-center gap-1">
+      <span>{{ label() }}</span>
+      @if (required()) {
+        <span class="text-rose-500 font-extrabold" aria-hidden="true">*</span>
+      }
+    </label>
+  }
+
+  <ng-content />
+
+  @if (error()) {
+    <span class="text-[11px] font-semibold text-rose-600 mt-0.5" role="alert">
+      {{ error() }}
+    </span>
+  } @else if (hint()) {
+    <span class="text-[11px] font-medium text-slate-500 mt-0.5">
+      {{ hint() }}
+    </span>
+  }
+</div>

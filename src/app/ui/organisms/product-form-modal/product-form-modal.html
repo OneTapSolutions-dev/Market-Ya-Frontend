@@ -1,0 +1,123 @@
+<ui-modal [(open)]="open" title="Registrar Nuevo Producto" size="xl">
+  <div class="space-y-4 text-xs">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Nombre Comercial del Producto *</label>
+        <ui-input
+          type="text"
+          placeholder="Ej: Inka Kola 500 ml"
+          [value]="name()"
+          (inputChange)="name.set($event)"
+        />
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Código SKU *</label>
+        <ui-input
+          type="text"
+          placeholder="Ej: BEB-100"
+          [(value)]="sku"
+        />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Categoría</label>
+        <ui-select [value]="category()" (valueChange)="category.set($event)">
+          @for (cat of categories(); track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          } @empty {
+            <option value="Bebidas">Bebidas</option>
+            <option value="Abarrotes">Abarrotes</option>
+            <option value="Lácteos">Lácteos</option>
+          }
+        </ui-select>
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Precio Costo (S/)</label>
+        <ui-input
+          type="number"
+          placeholder="0.00"
+          [value]="costPrice()"
+          (inputChange)="costPrice.set(+$event)"
+        />
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Precio Venta (S/)</label>
+        <ui-input
+          type="number"
+          placeholder="0.00"
+          [value]="salePrice()"
+          (inputChange)="salePrice.set(+$event)"
+        />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Stock Almacén Inicial</label>
+        <ui-input
+          type="number"
+          [value]="stockAlmacen()"
+          (inputChange)="stockAlmacen.set(+$event)"
+        />
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Stock Góndola Inicial</label>
+        <ui-input
+          type="number"
+          [value]="stockGondola()"
+          (inputChange)="stockGondola.set(+$event)"
+        />
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Mínimo en Góndola</label>
+        <ui-input
+          type="number"
+          [value]="minGondola()"
+          (inputChange)="minGondola.set(+$event)"
+        />
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Fecha de Expiración</label>
+        <ui-input
+          type="date"
+          [(value)]="expirationDate"
+        />
+      </div>
+
+      <div>
+        <label class="block font-bold text-slate-700 mb-1">Proveedor Asignado</label>
+        <ui-input
+          type="text"
+          placeholder="Ej: Arca Continental"
+          [(value)]="supplier"
+        />
+      </div>
+    </div>
+  </div>
+
+  <div modal-actions class="flex items-center justify-end gap-2 w-full">
+    <ui-button variant="ghost" (clicked)="open.set(false)">
+      Cancelar
+    </ui-button>
+    <ui-button
+      variant="primary"
+      [disabled]="!name() || !sku() || salePrice() <= 0"
+      (clicked)="submit()"
+    >
+      <div class="flex items-center gap-1.5 font-extrabold">
+        <ui-icon name="plus" size="1rem" />
+        <span>Guardar Producto</span>
+      </div>
+    </ui-button>
+  </div>
+</ui-modal>

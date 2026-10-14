@@ -1,0 +1,177 @@
+<div class="space-y-6">
+  <!-- Filtros Globales de Ventas -->
+  <section aria-labelledby="sales-filters-heading" class="space-y-4 rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-xs">
+    <div class="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <h2 id="sales-filters-heading" class="text-base font-extrabold text-slate-900 sm:text-lg">
+          Filtros de análisis de ventas
+        </h2>
+        <p class="text-xs text-slate-500">
+          Los indicadores y gráficos se calculan dinámicamente con estos criterios.
+        </p>
+      </div>
+      <button
+        type="button"
+        (click)="resetFilters()"
+        class="text-xs font-bold text-primary hover:underline cursor-pointer self-start sm:self-auto"
+      >
+        Restablecer filtros
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div>
+        <label for="filter-date-from" class="block text-xs font-bold text-slate-700 mb-1">Fecha desde</label>
+        <ui-input
+          id="filter-date-from"
+          type="date"
+          [value]="dateFrom()"
+          (inputChange)="dateFrom.set($event)"
+          ariaLabel="Fecha desde"
+        />
+      </div>
+
+      <div>
+        <label for="filter-date-to" class="block text-xs font-bold text-slate-700 mb-1">Fecha hasta</label>
+        <ui-input
+          id="filter-date-to"
+          type="date"
+          [value]="dateTo()"
+          (inputChange)="dateTo.set($event)"
+          ariaLabel="Fecha hasta"
+        />
+      </div>
+    </div>
+
+    <!-- Rango de Horas con Doble Deslizador -->
+    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <ui-dual-range-slider
+        [(from)]="hourFrom"
+        [(to)]="hourTo"
+        [min]="openHour"
+        [max]="closeHour"
+      />
+    </div>
+  </section>
+
+  <!-- Indicadores KPI de Ventas -->
+  <section aria-label="Indicadores de ventas" class="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 2xl:grid-cols-6">
+    <ui-kpi-metric
+      label="Venta Total"
+      [value]="'S/ ' + (summary().total | number:'1.2-2')"
+      color="orange"
+      icon="currencyDollar"
+    />
+    <ui-kpi-metric
+      label="Transacciones"
+      [value]="summary().transactions"
+      color="teal"
+      icon="documentText"
+    />
+    <ui-kpi-metric
+      label="Ticket Promedio"
+      [value]="'S/ ' + (summary().averageTicket | number:'1.2-2')"
+      color="sky"
+      icon="shoppingCart"
+    />
+    <ui-kpi-metric
+      label="Productos Vendidos"
+      [value]="summary().productsSold"
+      color="amber"
+      icon="queueList"
+    />
+    <ui-kpi-metric
+      label="Hora Pico"
+      [value]="summary().peakHour"
+      color="rose"
+      icon="clock"
+    />
+    <ui-kpi-metric
+      label="Día con Más Venta"
+      [value]="summary().peakDay"
+      color="emerald"
+      icon="calendar"
+    />
+  </section>
+
+  <!-- Gráficos de Tendencias SVG -->
+  <section class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <!-- Tendencia por Hora -->
+    <article class="space-y-3 rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-xs">
+      <div>
+        <h3 class="text-sm sm:text-base font-extrabold text-slate-900">
+          Tendencia de ventas por hora
+        </h3>
+        <p class="text-xs text-slate-500">
+          Curva de facturación entre {{ hourFrom() }}:00 y {{ hourTo() }}:00.
+        </p>
+      </div>
+
+      <svg class="h-44 w-full overflow-visible" viewBox="0 0 540 170" role="img" aria-label="Línea de ventas por hora">
+        <line x1="28" y1="145" x2="525" y2="145" stroke="#e2e8f0" stroke-width="1.5" />
+        <line x1="28" y1="95" x2="525" y2="95" stroke="#f1f5f9" stroke-dasharray="4" />
+        <line x1="28" y1="45" x2="525" y2="45" stroke="#f1f5f9" stroke-dasharray="4" />
+
+        @if (hourlyLinePoints()) {
+          <polyline
+            [attr.points]="hourlyLinePoints()"
+            fill="none"
+            stroke="#f97316"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
+        }
+
+        @for (bucket of hourlySales(); track bucket.key; let i = $index) {
+          <circle
+            [attr.cx]="hourChartX(i)"
+            [attr.cy]="hourChartY(bucket.total)"
+            r="4.5"
+            fill="#f97316"
+            class="transition-all hover:r-6"
+          />
+          <text
+            [attr.x]="hourChartX(i)"
+            y="162"
+            fill="#64748b"
+            font-size="9"
+            font-family="monospace"
+            text-anchor="middle"
+          >
+            {{ bucket.label }}
+          </text>
+        }
+      </svg>
+    </article>
+
+    <!-- Distribución por Día de la Semana -->
+    <article class="space-y-3 rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-xs">
+      <div>
+        <h3 class="text-sm sm:text-base font-extrabold text-slate-900">
+          Distribución por día de la semana
+        </h3>
+        <p class="text-xs text-slate-500">
+          Comparativa de volumen de ventas semanal.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-7 gap-2 h-44 items-end pt-6 pb-2 px-2 border-b border-slate-200">
+        @for (day of weekdaySales(); track day.key) {
+          <div class="flex flex-col items-center gap-1.5 h-full justify-end group">
+            <span class="text-[9px] font-mono text-slate-400 group-hover:text-primary transition-colors">
+              S/ {{ day.total | number:'1.0-0' }}
+            </span>
+            <div
+              class="w-full max-w-[28px] bg-teal-600 rounded-t-lg transition-all duration-300 group-hover:bg-primary shadow-xs"
+              [style.height.%]="(day.total / maxWeekdayTotal()) * 85 + 5"
+            ></div>
+            <span class="text-[10px] font-extrabold text-slate-600 truncate">
+              {{ day.label.substring(0, 3) }}
+            </span>
+          </div>
+        }
+      </div>
+    </article>
+  </section>
+</div>

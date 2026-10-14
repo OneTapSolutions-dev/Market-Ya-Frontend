@@ -1,0 +1,131 @@
+@if (open()) {
+  <nav
+    id="mobile-navigation-menu"
+    aria-label="Navegación principal móvil"
+    class="xl:hidden border-b border-slate-200 bg-white px-4 py-4 sm:px-6 shadow-md"
+    (keydown.escape)="close()"
+  >
+    <h2 class="mb-3 text-xs font-extrabold uppercase tracking-wider text-slate-500">Menú de módulos</h2>
+    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+      @if (store.canAccess('dashboard')) {
+        <a
+          routerLink="/dashboard"
+          routerLinkActive="border-orange-200 bg-orange-50 text-orange-700 font-extrabold"
+          (click)="close()"
+          class="flex min-h-12 items-center gap-3 rounded-xl border border-transparent px-4 py-3 text-left text-sm font-bold text-slate-700 transition-colors hover:border-slate-200 hover:bg-slate-50"
+        >
+          <ui-icon name="squares2x2" size="1.25rem" class="shrink-0" />
+          <span>Dashboard</span>
+        </a>
+      }
+
+      @if (store.canAccess('pos')) {
+        <a
+          routerLink="/pos"
+          routerLinkActive="border-orange-200 bg-orange-50 text-orange-700 font-extrabold"
+          (click)="close()"
+          class="flex min-h-12 items-center gap-3 rounded-xl border border-transparent px-4 py-3 text-left text-sm font-bold text-slate-700 transition-colors hover:border-slate-200 hover:bg-slate-50"
+        >
+          <ui-icon name="shoppingCart" size="1.25rem" class="shrink-0" />
+          <span>Gestión de Ventas</span>
+        </a>
+      }
+
+      @if (store.canAccess('inventory')) {
+        <a
+          routerLink="/inventory"
+          routerLinkActive="border-orange-200 bg-orange-50 text-orange-700 font-extrabold"
+          (click)="close()"
+          class="flex min-h-12 items-center gap-3 rounded-xl border border-transparent px-4 py-3 text-left text-sm font-bold text-slate-700 transition-colors hover:border-slate-200 hover:bg-slate-50"
+        >
+          <ui-icon name="queueList" size="1.25rem" class="shrink-0" />
+          <span>Traslados y Kardex</span>
+        </a>
+      }
+
+      @if (store.canAccess('units')) {
+        <a
+          routerLink="/units"
+          routerLinkActive="border-orange-200 bg-orange-50 text-orange-700 font-extrabold"
+          (click)="close()"
+          class="flex min-h-12 items-center gap-3 rounded-xl border border-transparent px-4 py-3 text-left text-sm font-bold text-slate-700 transition-colors hover:border-slate-200 hover:bg-slate-50"
+        >
+          <ui-icon name="scale" size="1.25rem" class="shrink-0" />
+          <span>Unidades de Medida</span>
+        </a>
+      }
+
+      @if (store.canAccess('packs')) {
+        <a
+          routerLink="/packs"
+          routerLinkActive="border-orange-200 bg-orange-50 text-orange-700 font-extrabold"
+          (click)="close()"
+          class="flex min-h-12 items-center gap-3 rounded-xl border border-transparent px-4 py-3 text-left text-sm font-bold text-slate-700 transition-colors hover:border-slate-200 hover:bg-slate-50"
+        >
+          <ui-icon name="squaresPlus" size="1.25rem" class="shrink-0" />
+          <span>Armado de Packs</span>
+        </a>
+      }
+
+      @if (store.canAccess('movements')) {
+        <a
+          routerLink="/movements"
+          routerLinkActive="border-orange-200 bg-orange-50 text-orange-700 font-extrabold"
+          (click)="close()"
+          class="flex min-h-12 items-center gap-3 rounded-xl border border-transparent px-4 py-3 text-left text-sm font-bold text-slate-700 transition-colors hover:border-slate-200 hover:bg-slate-50"
+        >
+          <ui-icon name="documentText" size="1.25rem" class="shrink-0" />
+          <span>Historial y Compras</span>
+        </a>
+      }
+
+      @if (store.canAccess('expirations')) {
+        <a
+          routerLink="/expirations"
+          routerLinkActive="border-orange-200 bg-orange-50 text-orange-700 font-extrabold"
+          (click)="close()"
+          class="flex min-h-12 items-center gap-3 rounded-xl border border-transparent px-4 py-3 text-left text-sm font-bold text-slate-700 transition-colors hover:border-slate-200 hover:bg-slate-50"
+        >
+          <ui-icon name="clock" size="1.25rem" class="shrink-0" />
+          <span>Vencimientos</span>
+        </a>
+      }
+
+      @if (store.canAccess('cash-closure')) {
+        <a
+          routerLink="/cash-closure"
+          routerLinkActive="border-orange-200 bg-orange-50 text-orange-700 font-extrabold"
+          (click)="close()"
+          class="flex min-h-12 items-center gap-3 rounded-xl border border-transparent px-4 py-3 text-left text-sm font-bold text-slate-700 transition-colors hover:border-slate-200 hover:bg-slate-50"
+        >
+          <ui-icon name="currencyDollar" size="1.25rem" class="shrink-0" />
+          <span>Cierre de Caja</span>
+        </a>
+      }
+
+      @if (store.canAccess('electronic-documents')) {
+        <a
+          routerLink="/electronic-documents"
+          routerLinkActive="border-orange-200 bg-orange-50 text-orange-700 font-extrabold"
+          (click)="close()"
+          class="flex min-h-12 items-center gap-3 rounded-xl border border-transparent px-4 py-3 text-left text-sm font-bold text-slate-700 transition-colors hover:border-slate-200 hover:bg-slate-50"
+        >
+          <ui-icon name="documentText" size="1.25rem" class="shrink-0" />
+          <span>Comprobantes (SUNAT)</span>
+        </a>
+      }
+
+      @if (store.currentUser()?.role === 'admin') {
+        <a
+          routerLink="/reports"
+          routerLinkActive="border-orange-200 bg-orange-50 text-orange-700 font-extrabold"
+          (click)="close()"
+          class="flex min-h-12 items-center gap-3 rounded-xl border border-transparent px-4 py-3 text-left text-sm font-bold text-slate-700 transition-colors hover:border-slate-200 hover:bg-slate-50"
+        >
+          <ui-icon name="chartBar" size="1.25rem" class="shrink-0" />
+          <span>Reportes</span>
+        </a>
+      }
+    </div>
+  </nav>
+}

@@ -1,0 +1,23 @@
+<article
+  class="min-w-0 rounded-xl border border-slate-200 border-l-4 bg-white px-3 py-3 shadow-sm sm:p-4"
+  [class]="borderClass() + ' ' + customClass()"
+>
+  <div class="flex items-center justify-between gap-2">
+    <span class="block min-h-7 text-[10px] font-bold uppercase tracking-wider text-slate-500 sm:min-h-0 sm:text-xs">
+      {{ label() }}
+    </span>
+    @if (icon()) {
+      <ui-icon [name]="icon()!" size="1.25rem" class="text-slate-400" />
+    }
+  </div>
+
+  <span class="mt-1 block break-words font-mono text-base font-extrabold text-slate-900 sm:text-xl">
+    {{ value() }}
+  </span>
+
+  @if (subtext()) {
+    <p class="mt-0.5 text-[11px] font-medium text-slate-500">
+      {{ subtext() }}
+    </p>
+  }
+</article>

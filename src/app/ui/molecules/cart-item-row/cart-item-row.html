@@ -1,0 +1,73 @@
+<div
+  class="bg-slate-50 border border-slate-200 rounded-2xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs shadow-xs hover:border-orange-300 transition-all select-none"
+  [class]="customClass()"
+>
+  <div class="flex-1 min-w-0 space-y-1">
+    <div class="flex items-center gap-1.5 flex-wrap">
+      <span class="font-extrabold text-slate-900 text-xs">{{ displayName() }}</span>
+      <span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 text-[10px] font-mono font-bold">
+        SKU: {{ sku() }}
+      </span>
+      @if (tier() === 'PACK') {
+        <span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-extrabold border border-amber-300">
+          Pack
+        </span>
+      } @else if (tier() === 'CAJA') {
+        <span class="px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-800 text-[10px] font-extrabold border border-indigo-300">
+          Caja x{{ unitsPerItem() }} und
+        </span>
+      }
+    </div>
+
+    <div class="flex items-center gap-1.5 text-[11px] flex-wrap">
+      <span class="font-mono text-slate-600 font-bold">
+        S/ {{ unitPrice() | number:'1.2-2' }} x {{ quantity() }}
+      </span>
+
+      <span class="px-2 py-0.5 rounded-lg bg-orange-100 text-orange-800 font-mono font-extrabold text-[10px] border border-orange-200">
+        = {{ quantity() * unitsPerItem() }} unds físicas
+      </span>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between sm:justify-end gap-2 shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0 border-slate-200">
+    <!-- Controles de cantidad -->
+    <div class="flex items-center bg-white rounded-xl border border-slate-300 shadow-xs">
+      <button
+        type="button"
+        [attr.aria-label]="'Disminuir cantidad de ' + displayName()"
+        class="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 cursor-pointer"
+        (click)="decrease()"
+      >
+        <ui-icon name="minus" size="0.75rem" />
+      </button>
+
+      <span class="px-2 font-mono font-extrabold text-slate-900 text-xs min-w-6 text-center">
+        {{ quantity() }}
+      </span>
+
+      <button
+        type="button"
+        [attr.aria-label]="'Aumentar cantidad de ' + displayName()"
+        class="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 cursor-pointer"
+        (click)="increase()"
+      >
+        <ui-icon name="plus" size="0.75rem" />
+      </button>
+    </div>
+
+    <!-- Subtotal -->
+    <span class="font-extrabold text-slate-900 font-mono w-16 text-right">
+      S/ {{ subtotal() | number:'1.2-2' }}
+    </span>
+
+    <button
+      type="button"
+      [attr.aria-label]="'Eliminar ' + displayName() + ' del carrito'"
+      class="flex min-h-9 min-w-9 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-600 cursor-pointer transition-colors"
+      (click)="removed.emit()"
+    >
+      <ui-icon name="trash" size="0.875rem" />
+    </button>
+  </div>
+</div>

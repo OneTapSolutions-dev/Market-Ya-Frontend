@@ -1,0 +1,12 @@
+<select
+  [id]="id() || null"
+  [name]="name() || null"
+  [class]="selectClass()"
+  [disabled]="disabled()"
+  [value]="value()"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-invalid]="error() ? 'true' : null"
+  (change)="onChange($event)"
+>
+  <ng-content />
+</select>

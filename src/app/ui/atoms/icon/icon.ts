@@ -1,0 +1,120 @@
+import { Component, input } from '@angular/core';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  heroArrowLeft,
+  heroArrowLeftOnRectangle,
+  heroArrowPath,
+  heroArrowPathRoundedSquare,
+  heroArrowRight,
+  heroArrowsRightLeft,
+  heroBars3,
+  heroBell,
+  heroBuildingOffice2,
+  heroBuildingStorefront,
+  heroCalendar,
+  heroChartBar,
+  heroCheckCircle,
+  heroChevronDown,
+  heroChevronLeft,
+  heroChevronRight,
+  heroClock,
+  heroCurrencyDollar,
+  heroDocumentText,
+  heroExclamationTriangle,
+  heroEye,
+  heroInformationCircle,
+  heroLockClosed,
+  heroLockOpen,
+  heroMagnifyingGlass,
+  heroMinus,
+  heroMoon,
+  heroPencilSquare,
+  heroPlus,
+  heroQrCode,
+  heroQueueList,
+  heroScale,
+  heroShieldCheck,
+  heroShoppingCart,
+  heroSparkles,
+  heroSquares2x2,
+  heroSquaresPlus,
+  heroSun,
+  heroTag,
+  heroTrash,
+  heroTruck,
+  heroXCircle,
+  heroXMark,
+} from '@ng-icons/heroicons/outline';
+
+const ICONS = {
+  arrowLeft: heroArrowLeft,
+  arrowLeftOnRectangle: heroArrowLeftOnRectangle,
+  arrowPath: heroArrowPath,
+  arrowPathRoundedSquare: heroArrowPathRoundedSquare,
+  arrowRight: heroArrowRight,
+  arrowsRightLeft: heroArrowsRightLeft,
+  bars3: heroBars3,
+  bell: heroBell,
+  buildingOffice: heroBuildingOffice2,
+  buildingStorefront: heroBuildingStorefront,
+  calendar: heroCalendar,
+  chartBar: heroChartBar,
+  checkCircle: heroCheckCircle,
+  chevronDown: heroChevronDown,
+  chevronLeft: heroChevronLeft,
+  chevronRight: heroChevronRight,
+  clock: heroClock,
+  currencyDollar: heroCurrencyDollar,
+  documentText: heroDocumentText,
+  exclamationTriangle: heroExclamationTriangle,
+  eye: heroEye,
+  informationCircle: heroInformationCircle,
+  lockClosed: heroLockClosed,
+  lockOpen: heroLockOpen,
+  magnifyingGlass: heroMagnifyingGlass,
+  minus: heroMinus,
+  moon: heroMoon,
+  pencilSquare: heroPencilSquare,
+  plus: heroPlus,
+  qrCode: heroQrCode,
+  queueList: heroQueueList,
+  scale: heroScale,
+  shieldCheck: heroShieldCheck,
+  shoppingCart: heroShoppingCart,
+  sparkles: heroSparkles,
+  squares2x2: heroSquares2x2,
+  squaresPlus: heroSquaresPlus,
+  sun: heroSun,
+  tag: heroTag,
+  trash: heroTrash,
+  truck: heroTruck,
+  xCircle: heroXCircle,
+  xMark: heroXMark,
+  // Alias semánticos
+  menu: heroBars3,
+  close: heroXMark,
+  search: heroMagnifyingGlass,
+  success: heroCheckCircle,
+  warning: heroExclamationTriangle,
+  info: heroInformationCircle,
+  error: heroXCircle,
+};
+
+export type IconName = keyof typeof ICONS;
+
+/**
+ * Átomo: Icono basado en Heroicons a través de `@ng-icons`.
+ * - Centraliza el catálogo de iconos de la aplicación.
+ * - Uso: `<ui-icon name="shoppingCart" size="1.25rem" />`
+ */
+@Component({
+  selector: 'ui-icon',
+  imports: [NgIcon],
+  providers: [provideIcons(ICONS)],
+  template: `<ng-icon [name]="name()" [size]="size()" [class]="className()" />`,
+})
+export class Icon {
+  readonly name = input.required<IconName>();
+  readonly size = input('1.25rem');
+  readonly className = input('', { alias: 'class' });
+}

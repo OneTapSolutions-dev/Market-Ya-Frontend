@@ -1,0 +1,108 @@
+<div class="flex flex-col h-full gap-3">
+  <!-- Selector de Pestañas Móvil (visible solo en pantallas < lg) -->
+  <div class="lg:hidden flex items-center bg-slate-200/80 p-1 rounded-2xl gap-1 shrink-0" role="tablist" aria-label="Vista del punto de venta">
+    <button
+      type="button"
+      role="tab"
+      [attr.aria-selected]="activeMobileTab() === 'catalog'"
+      class="flex-1 min-h-11 py-2 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
+      [class.bg-white]="activeMobileTab() === 'catalog'"
+      [class.text-primary]="activeMobileTab() === 'catalog'"
+      [class.shadow-xs]="activeMobileTab() === 'catalog'"
+      [class.text-slate-600]="activeMobileTab() !== 'catalog'"
+      (click)="activeMobileTab.set('catalog')"
+    >
+      <ui-icon name="squares2x2" size="1.125rem" />
+      <span>Catálogo</span>
+    </button>
+
+    <button
+      type="button"
+      role="tab"
+      [attr.aria-selected]="activeMobileTab() === 'cart'"
+      class="flex-1 min-h-11 py-2 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer relative"
+      [class.bg-white]="activeMobileTab() === 'cart'"
+      [class.text-primary]="activeMobileTab() === 'cart'"
+      [class.shadow-xs]="activeMobileTab() === 'cart'"
+      [class.text-slate-600]="activeMobileTab() !== 'cart'"
+      (click)="activeMobileTab.set('cart')"
+    >
+      <ui-icon name="shoppingCart" size="1.125rem" />
+      <span>Carrito</span>
+      @if (store.cart().length > 0) {
+        <span class="px-1.5 py-0.5 rounded-full bg-primary text-white text-[10px] font-mono font-extrabold">
+          {{ store.cart().length }}
+        </span>
+      }
+    </button>
+  </div>
+
+  <div class="grid min-h-[calc(100dvh-12rem)] grid-cols-1 gap-4 select-none sm:gap-5 lg:h-[calc(100vh-6.5rem)] lg:min-h-0 lg:grid-cols-12 flex-1">
+    <!-- Catálogo y Lector de Código de Barras (7 columnas) -->
+    <div
+      class="lg:col-span-7 h-full min-h-0"
+      [class.hidden]="activeMobileTab() !== 'catalog'"
+      [class.block]="activeMobileTab() === 'catalog'"
+      [class.lg:block]="true"
+    >
+      <ui-pos-catalog
+        [products]="store.products()"
+        [categories]="store.categories()"
+        [loading]="store.isLoadingProducts()"
+        (productSelected)="onAddToCart({ product: $event })"
+        (productDetailRequested)="openProductDetail($event)"
+      />
+    </div>
+
+    <!-- Carrito de Compras POS (5 columnas) -->
+    <div
+      class="lg:col-span-5 h-full min-h-0"
+      [class.hidden]="activeMobileTab() !== 'cart'"
+      [class.block]="activeMobileTab() === 'cart'"
+      [class.lg:block]="true"
+    >
+      <ui-pos-cart
+        [items]="store.cart()"
+        (quantityChanged)="onQuantityChange($event)"
+        (itemRemoved)="onRemoveItem($event)"
+        (cartCleared)="onClearCart()"
+        (checkoutRequested)="openCheckout()"
+      />
+    </div>
+  </div>
+
+  <!-- Botón Flotante Móvil: Ver Carrito cuando el usuario navega el Catálogo -->
+  @if (activeMobileTab() === 'catalog' && store.cart().length > 0) {
+    <div class="lg:hidden fixed bottom-6 left-4 right-4 z-30">
+      <button
+        type="button"
+        (click)="activeMobileTab.set('cart')"
+        class="w-full min-h-12 bg-primary text-white font-extrabold text-sm rounded-2xl shadow-xl shadow-orange-500/30 flex items-center justify-between px-5 py-3 cursor-pointer hover:bg-orange-600 transition-all"
+        aria-label="Ver carrito con ítems y proceder al cobro"
+      >
+        <span class="flex items-center gap-2">
+          <ui-icon name="shoppingCart" size="1.25rem" />
+          <span>{{ store.cart().length }} ítem{{ store.cart().length === 1 ? '' : 's' }} en carrito</span>
+        </span>
+        <span class="font-mono">S/ {{ cartTotal() | number:'1.2-2' }} →</span>
+      </button>
+    </div>
+  }
+
+  <!-- Modal de Pasarela de Cobro -->
+  <ui-checkout-modal
+    [(open)]="checkoutModalOpen"
+    [total]="cartTotal()"
+    (saleConfirmed)="onSaleCompleted($event)"
+  />
+
+  <!-- Modal de Detalle de Producto -->
+  @if (selectedProductForDetail(); as prod) {
+    <ui-product-detail-modal
+      [open]="true"
+      [product]="prod"
+      (openChange)="selectedProductForDetail.set(null)"
+      (addedToCart)="onAddToCart($event)"
+    />
+  }
+</div>

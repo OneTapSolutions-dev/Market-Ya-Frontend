@@ -1,0 +1,107 @@
+<div class="space-y-5 sm:space-y-6">
+  <!-- Selector de Tableros -->
+  <nav role="tablist" aria-label="Tableros administrativos" class="grid grid-cols-2 gap-1 rounded-2xl border border-slate-200 bg-white p-1 shadow-sm sm:inline-grid sm:w-auto">
+    <button
+      type="button"
+      role="tab"
+      id="executive-dashboard-tab"
+      aria-controls="executive-dashboard-panel"
+      [attr.aria-selected]="activeDashboardView() === 'overview'"
+      (click)="activeDashboardView.set('overview')"
+      [class]="activeDashboardView() === 'overview'
+        ? 'flex min-h-11 items-center justify-center rounded-xl bg-orange-500 px-4 py-2 text-sm font-extrabold text-white shadow-sm cursor-pointer'
+        : 'flex min-h-11 items-center justify-center rounded-xl px-4 py-2 text-sm font-bold text-slate-600 transition-colors hover:bg-orange-50 hover:text-orange-700 cursor-pointer'"
+    >
+      Panel Ejecutivo
+    </button>
+    <button
+      type="button"
+      role="tab"
+      id="reports-dashboard-tab"
+      aria-controls="reports-dashboard-panel"
+      [attr.aria-selected]="activeDashboardView() === 'reports'"
+      (click)="activeDashboardView.set('reports')"
+      [class]="activeDashboardView() === 'reports'
+        ? 'flex min-h-11 items-center justify-center rounded-xl bg-orange-500 px-4 py-2 text-sm font-extrabold text-white shadow-sm cursor-pointer'
+        : 'flex min-h-11 items-center justify-center rounded-xl px-4 py-2 text-sm font-bold text-slate-600 transition-colors hover:bg-orange-50 hover:text-orange-700 cursor-pointer'"
+    >
+      Reportes
+    </button>
+  </nav>
+
+  @if (activeDashboardView() === 'reports') {
+    <section id="reports-dashboard-panel" role="tabpanel" aria-labelledby="reports-dashboard-tab">
+      <ui-reports-generator
+        [sales]="store.salesHistory()"
+        [categories]="store.categories()"
+      />
+    </section>
+  }
+
+  @if (activeDashboardView() === 'overview') {
+    <div id="executive-dashboard-panel" role="tabpanel" aria-labelledby="executive-dashboard-tab" class="space-y-5 sm:space-y-6">
+      <!-- Top Executive Banner -->
+      <div class="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 rounded-3xl p-5 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        <div aria-hidden="true" class="absolute inset-0 opacity-[0.12] mix-blend-soft-light pointer-events-none" style="background-image: url('/logo.jpg'); background-size: 240px 135px;"></div>
+        <div aria-hidden="true" class="absolute inset-0 bg-gradient-to-r from-orange-700/25 via-transparent to-amber-700/25 pointer-events-none"></div>
+        <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.25),transparent)] pointer-events-none"></div>
+
+        <div class="flex flex-col items-start justify-between gap-4 relative z-10 sm:flex-row sm:items-center">
+          <div class="flex flex-col items-start gap-2">
+            <h1 class="max-w-full break-words text-3xl leading-tight font-extrabold text-white sm:text-5xl lg:text-6xl">
+              Bienvenido Administrador!
+            </h1>
+            <span class="text-xs leading-relaxed text-orange-50 font-semibold font-mono sm:text-sm">{{ todayDate }}</span>
+          </div>
+          <div class="card self-center bg-white text-slate-900 shadow-xl sm:self-auto rounded-2xl p-2 sm:p-3">
+            <img src="/logo.jpg" alt="Logo de MarketYa" class="w-32 h-auto rounded-xl object-contain sm:w-40 lg:w-52" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Analítica de Ventas (Organismo) -->
+      <ui-sales-analytics />
+
+      <!-- Indicadores de Inventario Crítico -->
+      <section aria-label="Indicadores de inventario" class="space-y-3">
+        <div>
+          <h2 class="text-base font-extrabold text-slate-900 sm:text-lg">Estado del inventario</h2>
+          <p class="text-xs text-slate-500">Atajos a los puntos que requieren atención.</p>
+        </div>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+          <div class="rounded-2xl border border-amber-100 bg-white p-4 shadow-sm transition-all hover:border-amber-300 hover:shadow-md sm:rounded-3xl sm:p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Stock Bajo Góndola</span>
+              <div class="w-10 h-10 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center border border-amber-200">
+                <ui-icon name="exclamationTriangle" size="1.25rem" />
+              </div>
+            </div>
+            <div class="text-3xl font-extrabold text-slate-900 font-mono tracking-tight">
+              {{ store.lowStockGondolaCount() }} <span class="text-sm font-semibold text-slate-500 font-sans">ítems</span>
+            </div>
+            <a routerLink="/inventory" class="mt-3 flex min-h-11 items-center gap-2 text-xs font-bold text-amber-700 hover:underline">
+              <span>Requiere recarga de almacén</span>
+              <ui-icon name="arrowRight" size="0.875rem" />
+            </a>
+          </div>
+
+          <div class="rounded-2xl border border-rose-100 bg-white p-4 shadow-sm transition-all hover:border-rose-300 hover:shadow-md sm:rounded-3xl sm:p-5">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Próximos a Vencer</span>
+              <div class="w-10 h-10 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-200">
+                <ui-icon name="clock" size="1.25rem" />
+              </div>
+            </div>
+            <div class="text-3xl font-extrabold text-slate-900 font-mono tracking-tight">
+              {{ store.nearExpirationCount() }} <span class="text-sm font-semibold text-slate-500 font-sans">productos</span>
+            </div>
+            <a routerLink="/expirations" class="mt-3 flex min-h-11 items-center gap-2 text-xs font-bold text-rose-700 hover:underline">
+              <span>Ver canjes y ofertas</span>
+              <ui-icon name="arrowRight" size="0.875rem" />
+            </a>
+          </div>
+        </div>
+      </section>
+    </div>
+  }
+</div>

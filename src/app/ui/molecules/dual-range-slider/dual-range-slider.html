@@ -1,0 +1,44 @@
+<div class="space-y-2" [class]="customClass()">
+  <div class="flex items-center justify-between text-xs font-bold text-slate-700">
+    <span>Horario de atención</span>
+    <span class="font-mono text-primary font-extrabold">
+      {{ formatHour(from()) }} – {{ formatHour(to()) }}
+    </span>
+  </div>
+
+  <div class="flex items-center gap-2 text-[10px] font-mono text-slate-500 sm:gap-3">
+    <span>{{ formatHour(min()) }}</span>
+    <div class="relative h-9 flex-1 flex items-center" role="group" aria-label="Rango de horario de atención">
+      <!-- Background track -->
+      <div class="absolute inset-x-0 h-1.5 rounded-full bg-slate-200"></div>
+      <!-- Selected highlight track -->
+      <div
+        class="absolute h-1.5 rounded-full bg-primary"
+        [style.left.%]="fromPosition()"
+        [style.width.%]="rangeWidth()"
+      ></div>
+      <!-- Dual range native inputs overlaid -->
+      <input
+        type="range"
+        [min]="min()"
+        [max]="max()"
+        [step]="step()"
+        [value]="from()"
+        aria-label="Hora de inicio"
+        class="absolute inset-x-0 w-full appearance-none bg-transparent pointer-events-auto cursor-pointer accent-primary"
+        (input)="onFromInput($event)"
+      />
+      <input
+        type="range"
+        [min]="min()"
+        [max]="max()"
+        [step]="step()"
+        [value]="to()"
+        aria-label="Hora de fin"
+        class="absolute inset-x-0 w-full appearance-none bg-transparent pointer-events-auto cursor-pointer accent-primary"
+        (input)="onToInput($event)"
+      />
+    </div>
+    <span>{{ formatHour(max()) }}</span>
+  </div>
+</div>

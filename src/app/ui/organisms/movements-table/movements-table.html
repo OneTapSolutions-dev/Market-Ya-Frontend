@@ -1,0 +1,281 @@
+<div class="space-y-6">
+  <!-- Top Banner -->
+  <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-blue-100 text-blue-800 border border-blue-200">
+          Historial Comercial
+        </span>
+        <span class="text-xs text-slate-500 font-mono font-bold">Kardex Unificado de Entradas & Salidas</span>
+      </div>
+      <h2 class="text-2xl font-extrabold text-slate-900">Movimientos de Compras y Ventas</h2>
+      <p class="text-xs text-slate-500 mt-0.5 max-w-2xl font-medium">
+        Consolidado general de operaciones: compras a proveedores, ventas en punto POS e ingresos de inventario.
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2 flex-wrap">
+      <ui-button variant="outline" size="sm" (clicked)="exportSalesRequested.emit()">
+        <ui-icon name="documentText" size="1rem" class="text-teal-600" />
+        Exportar Ventas
+      </ui-button>
+      <ui-button variant="outline" size="sm" (clicked)="exportPurchasesRequested.emit()">
+        <ui-icon name="documentText" size="1rem" class="text-blue-600" />
+        Exportar Compras
+      </ui-button>
+      <ui-button variant="primary" size="sm" (clicked)="registerPurchaseRequested.emit()">
+        <ui-icon name="plus" size="1rem" />
+        Registrar Compra Proveedor
+      </ui-button>
+    </div>
+  </div>
+
+  <!-- KPI Grid -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+    <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-1">
+      <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+        <span>Total Ventas Hoy</span>
+        <div class="w-8 h-8 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center border border-teal-200">
+          <ui-icon name="shoppingCart" size="1rem" />
+        </div>
+      </div>
+      <div class="text-2xl font-extrabold text-slate-900 font-mono">
+        S/ {{ totalSalesToday() | number: '1.2-2' }}
+      </div>
+      <p class="text-[11px] text-teal-700 font-medium font-mono">
+        {{ salesCount() }} comprobantes emitidos
+      </p>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-1">
+      <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+        <span>Compras Proveedor Mes</span>
+        <div class="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-200">
+          <ui-icon name="truck" size="1rem" />
+        </div>
+      </div>
+      <div class="text-2xl font-extrabold text-slate-900 font-mono">
+        S/ {{ totalPurchasesMonth() | number: '1.2-2' }}
+      </div>
+      <p class="text-[11px] text-blue-700 font-medium font-mono">
+        {{ purchasesCount() }} facturas de ingreso
+      </p>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-1">
+      <div class="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
+        <span>Movimientos en Registro</span>
+        <div class="w-8 h-8 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center border border-orange-200">
+          <ui-icon name="queueList" size="1rem" />
+        </div>
+      </div>
+      <div class="text-2xl font-extrabold text-slate-900 font-mono">
+        {{ movements().length }} operaciones
+      </div>
+      <p class="text-[11px] text-orange-600 font-medium">Ventas + Compras Consolidado</p>
+    </div>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div class="md:col-span-2">
+        <ui-search-bar
+          [value]="searchQuery()"
+          placeholder="Buscar por Comprobante (F001/B001), Proveedor, Cliente o Detalle..."
+          (searchChange)="onSearch($event)"
+        />
+      </div>
+
+      <div>
+        <select
+          [value]="selectedType()"
+          (change)="onTypeChange($any($event.target).value)"
+          aria-label="Filtrar por tipo de operación"
+          class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-xs text-slate-800 font-medium focus:outline-none focus:border-orange-500 focus:bg-white transition-all cursor-pointer"
+        >
+          <option value="">Todas las Operaciones (Ventas y Compras)</option>
+          <option value="VENTA">Ventas POS</option>
+          <option value="COMPRA">Compras / Entradas Proveedor</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Movements Table -->
+  <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs text-slate-700">
+        <thead class="bg-slate-100 text-slate-600 font-extrabold border-b border-slate-200 uppercase tracking-wider">
+          <tr>
+            <th class="py-3.5 px-4">Fecha / Hora</th>
+            <th class="py-3.5 px-4 text-center">Tipo</th>
+            <th class="py-3.5 px-4">Comprobante / Ref</th>
+            <th class="py-3.5 px-4">Contraparte</th>
+            <th class="py-3.5 px-4 text-center">Cant. Unidades</th>
+            <th class="py-3.5 px-4 text-right">Monto Total</th>
+            <th class="py-3.5 px-4 text-center">Estado</th>
+            <th class="py-3.5 px-4 text-center">Detalle</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (move of paginatedMovements(); track move.id) {
+            <tr class="hover:bg-orange-50/40 transition-colors">
+              <td class="py-3.5 px-4 font-mono text-slate-600 text-[11px]">
+                {{ move.dateTime | date: 'dd/MM/yyyy HH:mm' }}
+              </td>
+
+              <td class="py-3.5 px-4 text-center">
+                <span
+                  class="px-2 py-0.5 rounded text-[10px] font-extrabold uppercase border"
+                  [class]="move.type === 'COMPRA' ? 'bg-blue-100 text-blue-800 border-blue-200' : 'bg-teal-100 text-teal-800 border-teal-200'"
+                >
+                  {{ move.type }}
+                </span>
+              </td>
+
+              <td class="py-3.5 px-4 font-mono font-bold text-slate-900">
+                {{ move.documentRef }}
+              </td>
+
+              <td class="py-3.5 px-4 font-medium text-slate-800">
+                {{ move.partyName }}
+              </td>
+
+              <td class="py-3.5 px-4 text-center font-mono font-bold text-slate-700">
+                {{ move.itemsCount }}
+              </td>
+
+              <td class="py-3.5 px-4 text-right font-mono font-extrabold text-slate-900">
+                S/ {{ move.totalAmount | number: '1.2-2' }}
+              </td>
+
+              <td class="py-3.5 px-4 text-center">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                  {{ move.status }}
+                </span>
+              </td>
+
+              <td class="py-3.5 px-4 text-center">
+                <ui-button variant="ghost" size="xs" (clicked)="openDetail(move)">
+                  <ui-icon name="eye" size="1rem" />
+                  Ver
+                </ui-button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="py-12 text-center text-slate-400 text-xs">
+                No hay movimientos registrados según los filtros seleccionados.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+      <div class="text-slate-500 font-medium">
+        Mostrando
+        <span class="font-bold text-slate-900">
+          {{ filteredMovements().length > 0 ? (currentPage() - 1) * pageSize() + 1 : 0 }}
+        </span>
+        a
+        <span class="font-bold text-slate-900">
+          {{ currentPage() * pageSize() > filteredMovements().length ? filteredMovements().length : currentPage() * pageSize() }}
+        </span>
+        de <span class="font-bold text-slate-900">{{ filteredMovements().length }}</span> registros
+      </div>
+
+      <div class="flex items-center gap-2">
+        <ui-button
+          variant="outline"
+          size="xs"
+          [disabled]="currentPage() === 1"
+          (clicked)="setPage(currentPage() - 1)"
+        >
+          Anterior
+        </ui-button>
+        <span class="px-2 font-mono font-bold text-slate-800">
+          Página {{ currentPage() }} de {{ totalPages() }}
+        </span>
+        <ui-button
+          variant="outline"
+          size="xs"
+          [disabled]="currentPage() >= totalPages()"
+          (clicked)="setPage(currentPage() + 1)"
+        >
+          Siguiente
+        </ui-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Detalle de Movimiento -->
+  <ui-modal [(open)]="detailModalOpen" title="Detalle de Operación" size="lg">
+    @if (selectedMovement(); as move) {
+      <div class="space-y-4 text-xs">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+          <div>
+            <span class="font-bold text-slate-500 uppercase tracking-wider block text-[10px]">
+              {{ move.type }}: {{ move.documentRef }}
+            </span>
+            <div class="text-base font-extrabold text-slate-900">{{ move.title }}</div>
+            <div class="text-slate-500 font-mono text-[11px] mt-0.5">
+              {{ move.dateTime | date: 'dd/MM/yyyy HH:mm:ss' }} • Contraparte: {{ move.partyName }}
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="block text-[10px] text-slate-500 uppercase tracking-wider">Monto Total</span>
+            <span class="font-mono text-xl font-extrabold text-slate-900">
+              S/ {{ move.totalAmount | number: '1.2-2' }}
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-slate-700 mb-2 uppercase text-[10px] tracking-wider">
+            Líneas del Documento
+          </h4>
+          <div class="rounded-xl border border-slate-200 overflow-hidden">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100 text-slate-600 font-extrabold border-b border-slate-200">
+                <tr>
+                  <th class="py-2 px-3">Descripción</th>
+                  <th class="py-2 px-3 text-center">Cant</th>
+                  <th class="py-2 px-3 text-right">Precio / Costo Unit.</th>
+                  <th class="py-2 px-3 text-right">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @if (move.rawDetails?.items; as items) {
+                  @for (item of items; track $index) {
+                    <tr>
+                      <td class="py-2 px-3 font-medium text-slate-900">
+                        {{ item.productName || item.product?.name || item.name || 'Ítem' }}
+                      </td>
+                      <td class="py-2 px-3 text-center font-mono font-bold">
+                        {{ item.quantity }}
+                      </td>
+                      <td class="py-2 px-3 text-right font-mono">
+                        S/ {{ (item.unitCost || item.unitPrice || 0) | number: '1.2-2' }}
+                      </td>
+                      <td class="py-2 px-3 text-right font-mono font-bold">
+                        S/ {{ (item.totalCost || item.subtotal || 0) | number: '1.2-2' }}
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div slot="footer" class="flex items-center justify-end">
+      <ui-button variant="ghost" size="sm" (clicked)="detailModalOpen.set(false)">Cerrar</ui-button>
+    </div>
+  </ui-modal>
+</div>

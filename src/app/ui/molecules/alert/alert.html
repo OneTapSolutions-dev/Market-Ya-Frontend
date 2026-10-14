@@ -1,0 +1,23 @@
+<div role="alert" [class]="alertClass()">
+  <ui-icon [name]="icon()" size="1.25rem" class="shrink-0" />
+
+  <div class="flex-1 min-w-0">
+    @if (title()) {
+      <h4 class="font-extrabold">{{ title() }}</h4>
+    }
+    <div class="mt-0.5">
+      <ng-content />
+    </div>
+  </div>
+
+  @if (dismissible()) {
+    <button
+      type="button"
+      class="btn btn-ghost btn-xs btn-square shrink-0"
+      aria-label="Cerrar notificación"
+      (click)="dismissed.emit()"
+    >
+      <ui-icon name="close" size="1rem" />
+    </button>
+  }
+</div>

@@ -1,0 +1,187 @@
+<div class="space-y-6">
+  <!-- Top Banner -->
+  <div class="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-rose-100 text-rose-700 border border-rose-200">
+          Control de Vencimientos
+        </span>
+        <span class="text-xs text-slate-500 font-bold font-mono">Políticas de Proveedores Automatizadas</span>
+      </div>
+      <h2 class="text-2xl font-extrabold text-slate-900">Gestión de Expiración y Canjes a Proveedor</h2>
+      <p class="text-xs text-slate-500 mt-0.5 max-w-2xl font-medium">
+        Emparejamiento de fecha de ingreso real vs. fecha de factura proveedor para activar canjes oportunos y liquidaciones.
+      </p>
+    </div>
+
+    <div class="flex items-center gap-3 flex-wrap">
+      <ui-button variant="outline" size="sm" (clicked)="openAddModal()">
+        <ui-icon name="plus" size="1rem" class="text-orange-500" />
+        Agregar Proveedor
+      </ui-button>
+
+      <ui-button variant="primary" size="sm" (clicked)="exportCanjes()">
+        <ui-icon name="documentText" size="1rem" />
+        Exportar Reporte de Canjes
+      </ui-button>
+    </div>
+  </div>
+
+  <!-- Cards Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+    @for (sup of policies(); track sup.id) {
+      <div class="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-2 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="font-extrabold text-slate-900 text-sm truncate">{{ sup.name }}</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold border shrink-0" [class]="sup.badgeColor">
+              {{ sup.hasPolicy ? 'Política: ' + sup.daysLimit + ' días' : 'Sin Política' }}
+            </span>
+          </div>
+
+          <div class="mb-3 space-y-1">
+            @if (sup.ruc) {
+              <div class="text-[11px] text-slate-500 font-mono">
+                <span class="font-bold">RUC:</span> {{ sup.ruc }}
+              </div>
+            }
+            @if (sup.contactName) {
+              <div class="text-[11px] text-slate-500">
+                <span class="font-bold">Contacto:</span> {{ sup.contactName }}
+              </div>
+            }
+            @if (sup.phone || sup.email) {
+              <div class="text-[11px] text-slate-500 flex gap-2">
+                @if (sup.phone) { <span><span class="font-bold">Tel:</span> {{ sup.phone }}</span> }
+                @if (sup.email) { <span><span class="font-bold">Correo:</span> {{ sup.email }}</span> }
+              </div>
+            }
+          </div>
+
+          <p class="text-xs text-slate-600 font-medium leading-relaxed border-t border-slate-100 pt-2">
+            {{ sup.description }}
+          </p>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Modal: Registrar Proveedor y Políticas -->
+  <ui-modal [(open)]="addModalOpen" title="Registrar Proveedor y Políticas" size="md">
+    <div class="space-y-4 text-xs">
+      <div>
+        <label for="supplierNameInput" class="block font-bold text-slate-700 mb-1">
+          Nombre del Proveedor <span class="text-rose-500">*</span>
+        </label>
+        <input
+          id="supplierNameInput"
+          type="text"
+          [value]="name()"
+          (input)="name.set($any($event.target).value)"
+          placeholder="Ej. Nestlé Perú S.A."
+          class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-slate-900 font-medium focus:border-orange-500 focus:bg-white focus:outline-none"
+        />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="supplierRucInput" class="block font-bold text-slate-700 mb-1">RUC</label>
+          <input
+            id="supplierRucInput"
+            type="text"
+            maxlength="11"
+            [value]="ruc()"
+            (input)="ruc.set($any($event.target).value)"
+            placeholder="20123456789"
+            class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-slate-900 font-mono focus:border-orange-500 focus:bg-white focus:outline-none"
+          />
+        </div>
+        <div>
+          <label for="supplierContactInput" class="block font-bold text-slate-700 mb-1">Contacto Comercial</label>
+          <input
+            id="supplierContactInput"
+            type="text"
+            [value]="contactName()"
+            (input)="contactName.set($any($event.target).value)"
+            placeholder="Ej. Juan Pérez"
+            class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="supplierPhoneInput" class="block font-bold text-slate-700 mb-1">Teléfono</label>
+          <input
+            id="supplierPhoneInput"
+            type="text"
+            [value]="phone()"
+            (input)="phone.set($any($event.target).value)"
+            placeholder="987654321"
+            class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none"
+          />
+        </div>
+        <div>
+          <label for="supplierEmailInput" class="block font-bold text-slate-700 mb-1">Correo Electrónico</label>
+          <input
+            id="supplierEmailInput"
+            type="email"
+            [value]="email()"
+            (input)="email.set($any($event.target).value)"
+            placeholder="contacto@proveedor.pe"
+            class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none"
+          />
+        </div>
+      </div>
+
+      <div class="rounded-xl border border-orange-200 bg-orange-50/50 p-3 space-y-3">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            [checked]="hasPolicy()"
+            (change)="hasPolicy.set($any($event.target).checked)"
+            class="checkbox checkbox-primary checkbox-sm"
+          />
+          <span class="font-bold text-slate-800">Tiene Política de Canje por Vencimiento</span>
+        </label>
+
+        @if (hasPolicy()) {
+          <div>
+            <label for="supplierDaysLimitInput" class="block font-bold text-slate-700 mb-1">
+              Días límite antes de la fecha de vencimiento
+            </label>
+            <input
+              id="supplierDaysLimitInput"
+              type="number"
+              min="1"
+              max="90"
+              [value]="daysLimit()"
+              (input)="daysLimit.set(+$any($event.target).value)"
+              class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 font-mono font-bold text-slate-900 focus:border-orange-500 focus:outline-none"
+            />
+          </div>
+        }
+      </div>
+
+      <div>
+        <label for="supplierDescInput" class="block font-bold text-slate-700 mb-1">Condiciones / Observaciones</label>
+        <textarea
+          id="supplierDescInput"
+          rows="2"
+          [value]="description()"
+          (input)="description.set($any($event.target).value)"
+          placeholder="Ej. Canje 100% garantizado con nota de crédito o cambio por lote vigente..."
+          class="w-full rounded-xl border border-slate-300 bg-slate-50 p-2.5 text-xs text-slate-900 focus:border-orange-500 focus:bg-white focus:outline-none"
+        ></textarea>
+      </div>
+    </div>
+
+    <div slot="footer" class="flex items-center justify-end gap-2">
+      <ui-button variant="ghost" size="sm" (clicked)="addModalOpen.set(false)">Cancelar</ui-button>
+      <ui-button variant="primary" size="sm" [disabled]="!name().trim()" (clicked)="savePolicy()">
+        <ui-icon name="plus" size="1rem" />
+        Guardar Proveedor
+      </ui-button>
+    </div>
+  </ui-modal>
+</div>

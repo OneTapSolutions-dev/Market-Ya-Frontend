@@ -1,0 +1,79 @@
+<div
+  class="flex flex-col h-full overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-3 sm:p-5 shadow-xs"
+  [class]="customClass()"
+>
+  <!-- Encabezado del Carrito -->
+  <div class="flex items-center justify-between pb-3 border-b border-slate-200 shrink-0">
+    <div class="flex items-center gap-2">
+      <ui-icon name="shoppingCart" size="1.125rem" class="text-primary" />
+      <h3 class="font-extrabold text-slate-900 text-sm">Detalle de Venta</h3>
+      <span class="px-2 py-0.5 rounded-full bg-orange-100 text-[10px] font-mono text-primary font-bold">
+        {{ items().length }} ítems
+      </span>
+    </div>
+
+    @if (items().length > 0) {
+      <button
+        type="button"
+        (click)="cartCleared.emit()"
+        class="min-h-8 rounded-lg px-2 text-[11px] font-bold text-rose-600 transition-colors hover:bg-rose-50 cursor-pointer"
+      >
+        Vaciar Carrito
+      </button>
+    }
+  </div>
+
+  <!-- Lista de Productos en el Carrito -->
+  <div class="flex-1 space-y-2 overflow-y-auto overscroll-contain py-3 pr-1">
+    @for (item of items(); track item.product.id + (item.tier || '')) {
+      <ui-cart-item-row
+        [displayName]="item.displayName || item.product.name"
+        [sku]="item.product.sku"
+        [unitPrice]="item.unitPrice"
+        [quantity]="item.quantity"
+        [subtotal]="item.subtotal"
+        [tier]="item.tier || 'UNIDAD'"
+        [unitsPerItem]="item.unitsPerItem || 1"
+        (quantityChanged)="quantityChanged.emit({ productId: item.product.id, delta: $event, tier: item.tier })"
+        (removed)="itemRemoved.emit({ productId: item.product.id, tier: item.tier })"
+      />
+    } @empty {
+      <div class="flex flex-col items-center justify-center h-full py-12 text-center text-slate-400">
+        <ui-icon name="shoppingCart" size="2.5rem" class="text-slate-300 mb-2" />
+        <p class="text-xs font-bold text-slate-500">El carrito de venta está vacío</p>
+        <p class="text-[11px] text-slate-400 mt-0.5">Seleccione productos del catálogo para comenzar.</p>
+      </div>
+    }
+  </div>
+
+  <!-- Resumen de Totales y Botón de Cobro -->
+  <div class="pt-3 border-t border-slate-200 shrink-0 space-y-3">
+    <div class="space-y-1 text-xs">
+      <div class="flex justify-between text-slate-500">
+        <span>Subtotal (sin IGV)</span>
+        <span class="font-mono font-bold">S/ {{ subtotal() | number:'1.2-2' }}</span>
+      </div>
+      <div class="flex justify-between text-slate-500">
+        <span>IGV (18%)</span>
+        <span class="font-mono font-bold">S/ {{ igv() | number:'1.2-2' }}</span>
+      </div>
+      <div class="flex justify-between text-slate-900 font-extrabold text-base pt-1 border-t border-slate-100">
+        <span>Total a Pagar</span>
+        <span class="font-mono text-primary text-xl font-black">S/ {{ total() | number:'1.2-2' }}</span>
+      </div>
+    </div>
+
+    <ui-button
+      variant="primary"
+      size="lg"
+      [block]="true"
+      [disabled]="items().length === 0"
+      (clicked)="checkoutRequested.emit()"
+    >
+      <div class="flex items-center justify-center gap-2 font-extrabold text-sm sm:text-base">
+        <ui-icon name="currencyDollar" size="1.25rem" />
+        <span>Cobrar e Imprimir Comprobante</span>
+      </div>
+    </ui-button>
+  </div>
+</div>

@@ -1,0 +1,41 @@
+<ui-modal [(open)]="open" title="Reapertura Auditada de Caja" size="md">
+  <div class="space-y-4 text-xs">
+    <div class="rounded-xl border border-teal-200 bg-teal-50 p-3 text-teal-900">
+      <div class="flex items-center gap-2 font-bold mb-1">
+        <ui-icon name="shieldCheck" size="1.1rem" class="text-teal-700" />
+        <span>Modo Auditoría Administrativo</span>
+      </div>
+      <p class="text-slate-600 leading-relaxed">
+        Esta función permite reabrir un turno de caja para corregir comprobantes duplicados, registrar
+        anulaciones o resolver descuadres antes de la consolidación fiscal definitiva.
+      </p>
+    </div>
+
+    <div>
+      <label for="reopenReasonInput" class="block font-bold text-slate-700 mb-1">
+        Motivo / Justificación del Ajuste (Obligatorio) <span class="text-rose-500">*</span>
+      </label>
+      <textarea
+        id="reopenReasonInput"
+        rows="3"
+        [value]="reason()"
+        (input)="reason.set($any($event.target).value)"
+        placeholder="Ej. Corrección por boleta duplicada emitida a cliente final previo a declaración tributaria..."
+        class="w-full rounded-xl border border-slate-300 bg-slate-50 p-3 text-xs text-slate-800 placeholder-slate-400 focus:border-teal-600 focus:bg-white focus:outline-none"
+      ></textarea>
+    </div>
+  </div>
+
+  <div slot="footer" class="flex items-center justify-end gap-2">
+    <ui-button variant="ghost" size="sm" (clicked)="cancel()">Cancelar</ui-button>
+    <ui-button
+      variant="secondary"
+      size="sm"
+      [disabled]="!reason().trim()"
+      (clicked)="confirmReopen()"
+    >
+      <ui-icon name="lockOpen" size="1rem" />
+      Confirmar Reapertura
+    </ui-button>
+  </div>
+</ui-modal>

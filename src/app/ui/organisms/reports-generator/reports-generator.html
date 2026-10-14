@@ -1,0 +1,244 @@
+<div class="space-y-6">
+  <header class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200 pb-5">
+    <div>
+      <span class="text-xs font-extrabold uppercase text-orange-600">Administración</span>
+      <h1 class="mt-1 text-2xl font-extrabold text-slate-900">Generador de Reportes</h1>
+      <p class="mt-1 text-xs text-slate-500 font-medium">
+        Define los criterios y genera un reporte de ventas para consultar o exportar a Excel.
+      </p>
+    </div>
+
+    <ui-button
+      variant="secondary"
+      size="sm"
+      [disabled]="!applied() || reportSales().length === 0"
+      (clicked)="exportExcel()"
+    >
+      <ui-icon name="documentText" size="1rem" />
+      Exportar Excel
+    </ui-button>
+  </header>
+
+  <!-- Formulario de Filtros -->
+  <form (ngSubmit)="generateReport()" class="space-y-4 border-b border-slate-200 pb-6">
+    <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 text-xs">
+      <div>
+        <label for="repDateFrom" class="mb-1 block font-bold text-slate-700">Desde</label>
+        <input
+          id="repDateFrom"
+          type="date"
+          [value]="dateFrom()"
+          (input)="dateFrom.set($any($event.target).value)"
+          class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-800 focus:border-orange-500 focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label for="repDateTo" class="mb-1 block font-bold text-slate-700">Hasta</label>
+        <input
+          id="repDateTo"
+          type="date"
+          [value]="dateTo()"
+          (input)="dateTo.set($any($event.target).value)"
+          class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-800 focus:border-orange-500 focus:outline-none"
+        />
+      </div>
+
+      <div>
+        <label for="repPaymentMethod" class="mb-1 block font-bold text-slate-700">Medio de Pago</label>
+        <select
+          id="repPaymentMethod"
+          [value]="paymentMethod()"
+          (change)="paymentMethod.set($any($event.target).value)"
+          class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-800 focus:border-orange-500 focus:outline-none cursor-pointer"
+        >
+          <option value="TODOS">Todos</option>
+          <option value="EFECTIVO">Efectivo</option>
+          <option value="YAPE">Yape</option>
+          <option value="PLIN">Plin</option>
+          <option value="TARJETA">Tarjeta POS</option>
+          <option value="YAPE_PLIN">Yape / Plin</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="repDocumentType" class="mb-1 block font-bold text-slate-700">Comprobante</label>
+        <select
+          id="repDocumentType"
+          [value]="documentType()"
+          (change)="documentType.set($any($event.target).value)"
+          class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-800 focus:border-orange-500 focus:outline-none cursor-pointer"
+        >
+          <option value="TODOS">Todos</option>
+          <option value="BOLETA">Boleta</option>
+          <option value="FACTURA">Factura</option>
+          <option value="NOTA_VENTA">Nota de Venta</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="repSunatStatus" class="mb-1 block font-bold text-slate-700">Estado SUNAT</label>
+        <select
+          id="repSunatStatus"
+          [value]="sunatStatus()"
+          (change)="sunatStatus.set($any($event.target).value)"
+          class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-800 focus:border-orange-500 focus:outline-none cursor-pointer"
+        >
+          <option value="TODOS">Todos</option>
+          <option value="ACEPTADO">Aceptado</option>
+          <option value="PENDIENTE">Pendiente</option>
+          <option value="RECHAZADO">Rechazado</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="repCategory" class="mb-1 block font-bold text-slate-700">Categoría</label>
+        <select
+          id="repCategory"
+          [value]="category()"
+          (change)="category.set($any($event.target).value)"
+          class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-800 focus:border-orange-500 focus:outline-none cursor-pointer"
+        >
+          <option value="TODAS">Todas</option>
+          @for (cat of categories(); track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-end gap-2">
+      <ui-button variant="outline" size="sm" (clicked)="resetFilters()">Limpiar Filtros</ui-button>
+      <button
+        type="submit"
+        class="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-5 py-2.5 text-xs font-extrabold text-white shadow-sm hover:bg-orange-700 cursor-pointer"
+      >
+        <ui-icon name="magnifyingGlass" size="1rem" />
+        Generar Reporte
+      </button>
+    </div>
+  </form>
+
+  <!-- Estado Inicial -->
+  @if (!applied()) {
+    <section class="border-b border-slate-200 py-12 text-center text-slate-400">
+      <ui-icon name="chartBar" size="2.5rem" class="mx-auto text-slate-300 mb-2" />
+      <p class="text-xs font-bold text-slate-600">Configura los filtros y haz clic en "Generar Reporte"</p>
+    </section>
+  }
+
+  <!-- Resultados del Reporte -->
+  @if (applied()) {
+    <section class="space-y-4">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div class="border-l-4 border-orange-500 bg-slate-50 px-4 py-3 rounded-r-2xl">
+          <span class="block text-xs font-bold text-slate-500">Ventas Encontradas</span>
+          <span class="mt-1 block font-mono text-xl font-extrabold text-slate-900">
+            {{ reportSales().length }}
+          </span>
+        </div>
+        <div class="border-l-4 border-teal-600 bg-slate-50 px-4 py-3 rounded-r-2xl">
+          <span class="block text-xs font-bold text-slate-500">Importe Total</span>
+          <span class="mt-1 block font-mono text-xl font-extrabold text-slate-900">
+            S/ {{ reportTotal() | number: '1.2-2' }}
+          </span>
+        </div>
+        <div class="border-l-4 border-slate-500 bg-slate-50 px-4 py-3 rounded-r-2xl">
+          <span class="block text-xs font-bold text-slate-500">Ticket Promedio</span>
+          <span class="mt-1 block font-mono text-xl font-extrabold text-slate-900">
+            S/ {{ averageTicket() | number: '1.2-2' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-700">
+            <thead class="bg-slate-100 text-slate-600 font-extrabold border-b border-slate-200 uppercase tracking-wider">
+              <tr>
+                <th class="py-3 px-4">Comprobante</th>
+                <th class="py-3 px-4">Fecha / Hora</th>
+                <th class="py-3 px-4">Cliente</th>
+                <th class="py-3 px-4">Medio de Pago</th>
+                <th class="py-3 px-4 text-right">Subtotal</th>
+                <th class="py-3 px-4 text-right">IGV</th>
+                <th class="py-3 px-4 text-right">Total</th>
+                <th class="py-3 px-4 text-center">Estado SUNAT</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (sale of paginatedSales(); track sale.id) {
+                <tr class="hover:bg-orange-50/40 transition-colors">
+                  <td class="py-3 px-4 font-mono font-bold text-slate-900">{{ sale.receiptNumber }}</td>
+                  <td class="py-3 px-4 font-mono text-slate-500 text-[11px]">
+                    {{ sale.dateTime }}
+                  </td>
+                  <td class="py-3 px-4 font-medium text-slate-800">{{ sale.customer.name }}</td>
+                  <td class="py-3 px-4">
+                    <span class="font-bold text-slate-700">{{ sale.paymentMethod }}</span>
+                  </td>
+                  <td class="py-3 px-4 text-right font-mono">S/ {{ sale.subtotal | number: '1.2-2' }}</td>
+                  <td class="py-3 px-4 text-right font-mono">S/ {{ sale.igv | number: '1.2-2' }}</td>
+                  <td class="py-3 px-4 text-right font-mono font-extrabold text-slate-900">
+                    S/ {{ sale.total | number: '1.2-2' }}
+                  </td>
+                  <td class="py-3 px-4 text-center">
+                    <span
+                      class="px-2 py-0.5 rounded text-[10px] font-extrabold border"
+                      [class]="sale.sunatStatus === 'ACEPTADO' ? 'bg-teal-100 text-teal-800 border-teal-200' : 'bg-amber-100 text-amber-800 border-amber-200'"
+                    >
+                      {{ sale.sunatStatus }}
+                    </span>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="py-10 text-center text-slate-400">
+                    No se encontraron ventas para los filtros especificados.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Paginación -->
+        <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+          <div class="text-slate-500 font-medium">
+            Mostrando
+            <span class="font-bold text-slate-900">
+              {{ reportSales().length > 0 ? (currentPage() - 1) * pageSize() + 1 : 0 }}
+            </span>
+            a
+            <span class="font-bold text-slate-900">
+              {{ currentPage() * pageSize() > reportSales().length ? reportSales().length : currentPage() * pageSize() }}
+            </span>
+            de <span class="font-bold text-slate-900">{{ reportSales().length }}</span> ventas
+          </div>
+
+          <div class="flex items-center gap-2">
+            <ui-button
+              variant="outline"
+              size="xs"
+              [disabled]="currentPage() === 1"
+              (clicked)="setPage(currentPage() - 1)"
+            >
+              Anterior
+            </ui-button>
+            <span class="px-2 font-mono font-bold text-slate-800">
+              Página {{ currentPage() }} de {{ totalPages() }}
+            </span>
+            <ui-button
+              variant="outline"
+              size="xs"
+              [disabled]="currentPage() >= totalPages()"
+              (clicked)="setPage(currentPage() + 1)"
+            >
+              Siguiente
+            </ui-button>
+          </div>
+        </div>
+      </div>
+    </section>
+  }
+</div>

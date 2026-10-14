@@ -1,0 +1,17 @@
+<div class="avatar" [class.placeholder]="!src() && initials()">
+  <div
+    class="rounded-full overflow-hidden flex items-center justify-center font-extrabold"
+    [class]="sizeClass() + ' ' + customClass()"
+    [class.ring-2]="bordered()"
+    [class.ring-primary]="bordered()"
+    [class.ring-offset-1]="bordered()"
+    [class.bg-orange-100]="!src()"
+    [class.text-primary]="!src()"
+  >
+    @if (src()) {
+      <img [src]="src()" [alt]="alt()" class="w-full h-full object-cover" />
+    } @else if (initials()) {
+      <span>{{ initials() }}</span>
+    }
+  </div>
+</div>

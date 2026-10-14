@@ -1,0 +1,9 @@
+/node_modules
+/dist
+/out-tsc
+/.angular
+/.storybook/*.log
+*.log
+
+*storybook.log
+storybook-static

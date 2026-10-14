@@ -1,0 +1,8 @@
+<ui-electronic-documents-list
+  [documents]="documentsService.documents()"
+  [actor]="store.currentUser()?.name || 'Administrador'"
+  (draftCreated)="onDraftCreated($event)"
+  (draftUpdated)="onDraftUpdated($event)"
+  (draftIssued)="onDraftIssued($event)"
+  (draftVoided)="onDraftVoided($event)"
+/>

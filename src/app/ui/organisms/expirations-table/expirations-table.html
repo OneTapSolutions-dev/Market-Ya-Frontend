@@ -1,0 +1,173 @@
+<div class="space-y-4">
+  <!-- Search Bar -->
+  <div class="bg-white border border-slate-200 rounded-3xl p-4 shadow-sm">
+    <ui-search-bar
+      [value]="searchQuery()"
+      placeholder="Buscar por Nombre, SKU, Barcode, Proveedor o Categoría..."
+      (searchChange)="onSearch($event)"
+    />
+  </div>
+
+  <!-- Table Container -->
+  <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between flex-wrap gap-2">
+      <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+        <ui-icon name="clock" size="1.2rem" class="text-rose-500" />
+        <span>Productos con Alerta de Vencimiento</span>
+      </h3>
+      <span class="text-xs text-slate-500 font-mono font-bold">
+        {{ nearExpiringProducts().length }} ítems en estado crítico
+      </span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs text-slate-700">
+        <thead class="bg-slate-100 text-slate-600 font-extrabold border-b border-slate-200 uppercase tracking-wider">
+          <tr>
+            <th class="py-3.5 px-4">Producto</th>
+            <th class="py-3.5 px-4">Proveedor / Regla</th>
+            <th class="py-3.5 px-4 text-center">F. Ingreso Factura</th>
+            <th class="py-3.5 px-4 text-center">F. Expiración</th>
+            <th class="py-3.5 px-4 text-center">Días Restantes</th>
+            <th class="py-3.5 px-4 text-center">Stock Góndola</th>
+            <th class="py-3.5 px-4 text-right">Precio Venta</th>
+            <th class="py-3.5 px-4 text-center">Acción Oferta</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (prod of paginatedProducts(); track prod.id) {
+            <tr class="hover:bg-orange-50/40 transition-colors">
+              <td class="py-3.5 px-4">
+                <div class="font-extrabold text-slate-900 text-xs">{{ prod.name }}</div>
+                <div class="text-[10px] text-slate-500 font-mono">SKU: {{ prod.sku }} • {{ prod.category }}</div>
+              </td>
+
+              <td class="py-3.5 px-4">
+                <div class="text-slate-900 font-bold">{{ prod.supplier }}</div>
+                <div class="text-[10px] text-orange-600 font-mono font-semibold">
+                  Límite Canje: {{ prod.exchangeDaysLimit }} días antes
+                </div>
+              </td>
+
+              <td class="py-3.5 px-4 text-center font-mono text-slate-600 text-xs">
+                {{ prod.supplierInvoiceDate }}
+              </td>
+
+              <td class="py-3.5 px-4 text-center font-mono font-bold text-slate-900 text-xs">
+                {{ prod.expirationDate }}
+              </td>
+
+              <td class="py-3.5 px-4 text-center">
+                @let days = getDaysLeft(prod.expirationDate);
+                <span
+                  class="px-2.5 py-1 rounded-lg font-mono font-extrabold border text-[11px]"
+                  [class]="days <= 15 ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-amber-100 text-amber-800 border-amber-200'"
+                >
+                  {{ days }} días
+                </span>
+              </td>
+
+              <td class="py-3.5 px-4 text-center font-mono font-extrabold text-slate-900 text-xs">
+                {{ prod.stockGondola }} und.
+              </td>
+
+              <td class="py-3.5 px-4 text-right font-mono font-extrabold text-slate-900 text-xs">
+                S/ {{ prod.salePrice | number: '1.2-2' }}
+              </td>
+
+              <td class="py-3.5 px-4 text-center">
+                <ui-button variant="warning" size="xs" (clicked)="openDiscountModal(prod)">
+                  <ui-icon name="tag" size="0.9rem" />
+                  Asignar Oferta
+                </ui-button>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="py-12 text-center text-slate-400 text-xs">
+                No hay productos próximos a vencer según los criterios de búsqueda.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Paginación -->
+    <div class="px-6 py-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+      <div class="text-slate-500 font-medium">
+        Mostrando
+        <span class="font-bold text-slate-900">
+          {{ nearExpiringProducts().length > 0 ? (currentPage() - 1) * pageSize() + 1 : 0 }}
+        </span>
+        a
+        <span class="font-bold text-slate-900">
+          {{ currentPage() * pageSize() > nearExpiringProducts().length ? nearExpiringProducts().length : currentPage() * pageSize() }}
+        </span>
+        de <span class="font-bold text-slate-900">{{ nearExpiringProducts().length }}</span> registros
+      </div>
+
+      <div class="flex items-center gap-2">
+        <ui-button
+          variant="outline"
+          size="xs"
+          [disabled]="currentPage() === 1"
+          (clicked)="setPage(currentPage() - 1)"
+        >
+          Anterior
+        </ui-button>
+        <span class="px-2 font-mono font-bold text-slate-800">
+          Página {{ currentPage() }} de {{ totalPages() }}
+        </span>
+        <ui-button
+          variant="outline"
+          size="xs"
+          [disabled]="currentPage() >= totalPages()"
+          (clicked)="setPage(currentPage() + 1)"
+        >
+          Siguiente
+        </ui-button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Asignación de Oferta -->
+  <ui-modal [(open)]="discountModalOpen" title="Asignar Precio de Oferta" size="sm">
+    @if (selectedProduct(); as prod) {
+      <div class="space-y-4 text-xs">
+        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3 space-y-1">
+          <div class="font-extrabold text-slate-900">{{ prod.name }}</div>
+          <div class="text-[11px] text-slate-500 font-mono">
+            Vence: {{ prod.expirationDate }} ({{ getDaysLeft(prod.expirationDate) }} días restantes)
+          </div>
+          <div class="text-[11px] text-slate-600">
+            Precio actual: <strong class="font-mono text-slate-900">S/ {{ prod.salePrice | number: '1.2-2' }}</strong>
+          </div>
+        </div>
+
+        <div>
+          <label for="discountPriceInput" class="block font-bold text-slate-700 mb-1">
+            Nuevo Precio de Oferta para Góndola (S/)
+          </label>
+          <input
+            id="discountPriceInput"
+            type="number"
+            step="0.10"
+            min="0.10"
+            [value]="customPrice()"
+            (input)="customPrice.set($any($event.target).value)"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 font-mono text-base font-extrabold text-orange-600 focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+      </div>
+    }
+
+    <div slot="footer" class="flex items-center justify-end gap-2">
+      <ui-button variant="ghost" size="sm" (clicked)="discountModalOpen.set(false)">Cancelar</ui-button>
+      <ui-button variant="primary" size="sm" (clicked)="saveDiscount()">
+        <ui-icon name="tag" size="1rem" />
+        Aplicar Precio de Oferta
+      </ui-button>
+    </div>
+  </ui-modal>
+</div>

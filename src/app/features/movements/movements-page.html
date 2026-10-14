@@ -1,0 +1,22 @@
+<div class="space-y-6">
+  <!-- Tabla Unificada de Movimientos -->
+  <ui-movements-table
+    [movements]="store.allMovements()"
+    [totalSalesToday]="store.totalSalesToday()"
+    [totalPurchasesMonth]="store.totalPurchasesMonth()"
+    [salesCount]="store.salesHistory().length"
+    [purchasesCount]="store.purchasesHistory().length"
+    (registerPurchaseRequested)="purchaseModalOpen.set(true)"
+    (exportSalesRequested)="onExportSales()"
+    (exportPurchasesRequested)="onExportPurchases()"
+  />
+
+  <!-- Modal de Compra a Proveedor Multi-producto -->
+  <ui-purchase-register-modal
+    [open]="purchaseModalOpen()"
+    [availableProducts]="store.products()"
+    [currentUser]="store.currentUser()?.name || 'Administrador'"
+    (openChange)="purchaseModalOpen.set($event)"
+    (purchaseRegistered)="onPurchaseRegistered($event)"
+  />
+</div>

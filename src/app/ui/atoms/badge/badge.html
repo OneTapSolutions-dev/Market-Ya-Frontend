@@ -1,0 +1,7 @@
+<span [class]="badgeClass()">
+  @if (label()) {
+    {{ label() }}
+  } @else {
+    <ng-content />
+  }
+</span>

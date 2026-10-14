@@ -1,0 +1,14 @@
+<input
+  [id]="id() || null"
+  [name]="name() || null"
+  [type]="type()"
+  [class]="inputClass()"
+  [value]="value()"
+  [placeholder]="placeholder()"
+  [disabled]="disabled()"
+  [readOnly]="readonly()"
+  [attr.aria-label]="ariaLabel() || placeholder() || null"
+  [attr.aria-invalid]="error() ? 'true' : null"
+  (input)="onInput($event)"
+  (keyup.enter)="enterPressed.emit()"
+/>

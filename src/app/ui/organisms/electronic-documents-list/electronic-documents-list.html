@@ -1,0 +1,399 @@
+<div class="space-y-6">
+  <!-- Top Banner -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+    <div>
+      <div class="flex items-center gap-2 mb-1">
+        <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-blue-100 text-blue-800 border border-blue-200">
+          Facturación Electrónica
+        </span>
+        <span class="text-xs text-slate-500 font-mono font-bold">SUNAT UBL 2.1</span>
+      </div>
+      <h1 class="text-2xl font-extrabold text-slate-900">Comprobantes y Borradores</h1>
+      <p class="text-xs text-slate-500 mt-0.5">
+        Genera, edita y emite Facturas, Boletas, Notas de Crédito y Débito con validación previa.
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2 flex-wrap">
+      <ui-button variant="outline" size="sm" (clicked)="openNewDraft('BOLETA')">
+        <ui-icon name="plus" size="1rem" />
+        Nueva Boleta
+      </ui-button>
+      <ui-button variant="primary" size="sm" (clicked)="openNewDraft('FACTURA')">
+        <ui-icon name="plus" size="1rem" />
+        Nueva Factura
+      </ui-button>
+      <ui-button variant="secondary" size="sm" (clicked)="openNewDraft('NOTA_CREDITO')">
+        <ui-icon name="plus" size="1rem" />
+        Nota de Crédito
+      </ui-button>
+    </div>
+  </div>
+
+  <!-- Search & Filters -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-white p-4 rounded-3xl border border-slate-200 shadow-sm text-xs">
+    <div>
+      <ui-search-bar
+        [(value)]="searchTerm"
+        placeholder="Buscar por referencia, cliente o producto..."
+      />
+    </div>
+
+    <div>
+      <select
+        [value]="typeFilter()"
+        (change)="typeFilter.set($any($event.target).value)"
+        aria-label="Filtrar por tipo de comprobante"
+        class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-slate-800 focus:border-orange-500 focus:outline-none cursor-pointer"
+      >
+        <option value="TODOS">Todos los tipos de comprobante</option>
+        @for (opt of documentTypes; track opt.type) {
+          <option [value]="opt.type">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+
+    <div>
+      <select
+        [value]="statusFilter()"
+        (change)="statusFilter.set($any($event.target).value)"
+        aria-label="Filtrar por estado del comprobante"
+        class="w-full rounded-xl border border-slate-300 bg-slate-50 px-3 py-2 text-slate-800 focus:border-orange-500 focus:outline-none cursor-pointer"
+      >
+        <option value="TODOS">Todos los estados</option>
+        <option value="BORRADOR">Borrador</option>
+        <option value="ACEPTADO">Aceptado SUNAT</option>
+        <option value="PENDIENTE_INTEGRACION">Pendiente de Integración</option>
+        <option value="ANULADO">Anulado</option>
+        <option value="RECHAZADO">Rechazado</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Documents Table -->
+  <div class="bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs text-slate-700">
+        <thead class="bg-slate-100 text-slate-600 font-extrabold border-b border-slate-200 uppercase tracking-wider">
+          <tr>
+            <th class="py-3.5 px-4">Referencia</th>
+            <th class="py-3.5 px-4">Tipo</th>
+            <th class="py-3.5 px-4">Fecha Emisión</th>
+            <th class="py-3.5 px-4">Cliente / RUC</th>
+            <th class="py-3.5 px-4 text-center">Líneas</th>
+            <th class="py-3.5 px-4 text-right">Total</th>
+            <th class="py-3.5 px-4 text-center">Estado</th>
+            <th class="py-3.5 px-4 text-right">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          @for (doc of filteredDocuments(); track doc.id) {
+            <tr class="hover:bg-orange-50/40 transition-colors">
+              <td class="py-3.5 px-4 font-mono font-bold text-slate-900">
+                {{ doc.draftReference }}
+              </td>
+
+              <td class="py-3.5 px-4">
+                <span class="font-extrabold text-slate-800">{{ documentTypeLabel(doc.type) }}</span>
+              </td>
+
+              <td class="py-3.5 px-4 font-mono text-slate-600 text-[11px]">
+                {{ doc.issueDate }}
+              </td>
+
+              <td class="py-3.5 px-4">
+                <div class="font-bold text-slate-900">{{ doc.customer.name }}</div>
+                <div class="text-[10px] text-slate-500 font-mono">
+                  {{ doc.customer.identityType }}: {{ doc.customer.identityNumber }}
+                </div>
+              </td>
+
+              <td class="py-3.5 px-4 text-center font-mono font-bold">
+                {{ doc.lines.length }}
+              </td>
+
+              <td class="py-3.5 px-4 text-right font-mono font-extrabold text-slate-900">
+                S/ {{ getDocumentTotal(doc) | number: '1.2-2' }}
+              </td>
+
+              <td class="py-3.5 px-4 text-center">
+                <span
+                  class="px-2.5 py-0.5 rounded text-[10px] font-extrabold uppercase border"
+                  [class]="doc.status === 'BORRADOR' ? 'bg-amber-100 text-amber-800 border-amber-200' : (doc.status === 'ACEPTADO' ? 'bg-teal-100 text-teal-800 border-teal-200' : (doc.status === 'ANULADO' ? 'bg-rose-100 text-rose-800 border-rose-200' : 'bg-slate-100 text-slate-700 border-slate-200'))"
+                >
+                  {{ doc.status }}
+                </span>
+              </td>
+
+              <td class="py-3.5 px-4 text-right">
+                <div class="flex items-center justify-end gap-1">
+                  <ui-button variant="ghost" size="xs" (clicked)="openDetail(doc)">
+                    <ui-icon name="eye" size="1rem" />
+                  </ui-button>
+
+                  @if (doc.status === 'BORRADOR') {
+                    <ui-button variant="ghost" size="xs" (clicked)="editDraft(doc)">
+                      <ui-icon name="pencilSquare" size="1rem" />
+                    </ui-button>
+                    <ui-button variant="secondary" size="xs" (clicked)="emitDocument(doc)">
+                      Emitir
+                    </ui-button>
+                  }
+
+                  @if (doc.status === 'ACEPTADO') {
+                    <ui-button variant="ghost" size="xs" (clicked)="voidDocument(doc)">
+                      <span class="text-rose-600 font-bold">Anular</span>
+                    </ui-button>
+                  }
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="8" class="py-12 text-center text-slate-400 text-xs">
+                No se encontraron comprobantes o borradores.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Modal Borrador (Crear/Editar) -->
+  <ui-modal [(open)]="formVisible" [title]="(editingDocumentId() ? 'Editar Borrador: ' : 'Nuevo Borrador: ') + documentTypeLabel(draftForm.type)" size="xl">
+    <div class="space-y-4 text-xs">
+      @if (formError()) {
+        <div class="rounded-xl border border-rose-200 bg-rose-50 p-3 text-rose-800 font-medium">
+          {{ formError() }}
+        </div>
+      }
+
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 bg-slate-50 border border-slate-200 rounded-2xl p-4">
+        <div>
+          <label for="draft-doc-type" class="block font-bold text-slate-700 mb-1">Tipo de Comprobante</label>
+          <select
+            id="draft-doc-type"
+            [(ngModel)]="draftForm.type"
+            [disabled]="!!editingDocumentId()"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none"
+          >
+            @for (opt of documentTypes; track opt.type) {
+              <option [value]="opt.type">{{ opt.label }}</option>
+            }
+          </select>
+        </div>
+
+        <div>
+          <label for="draft-issue-date" class="block font-bold text-slate-700 mb-1">Fecha de Emisión</label>
+          <input
+            id="draft-issue-date"
+            type="date"
+            [(ngModel)]="draftForm.issueDate"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 font-mono text-slate-900 focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label for="draft-identity-type" class="block font-bold text-slate-700 mb-1">Tipo Doc. Identidad</label>
+          <select
+            id="draft-identity-type"
+            [(ngModel)]="draftForm.identityType"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none"
+          >
+            <option value="DNI">DNI</option>
+            <option value="RUC">RUC</option>
+            <option value="OTRO">Otro</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="draft-identity-number" class="block font-bold text-slate-700 mb-1">Nº Documento</label>
+          <input
+            id="draft-identity-number"
+            type="text"
+            [(ngModel)]="draftForm.identityNumber"
+            placeholder="10478912345"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 font-mono font-bold text-slate-900 focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+
+        <div class="sm:col-span-2">
+          <label for="draft-customer-name" class="block font-bold text-slate-700 mb-1">Razón Social / Nombre Completo</label>
+          <input
+            id="draft-customer-name"
+            type="text"
+            [(ngModel)]="draftForm.customerName"
+            placeholder="Ej. Distribuidora Santa Rosa S.A.C."
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 font-medium focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+
+        <div class="sm:col-span-2">
+          <label for="draft-customer-address" class="block font-bold text-slate-700 mb-1">Dirección Fiscal</label>
+          <input
+            id="draft-customer-address"
+            type="text"
+            [(ngModel)]="draftForm.customerAddress"
+            placeholder="Ej. Av. Nicolás de Piérola 123, Lima"
+            class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 focus:border-orange-500 focus:outline-none"
+          />
+        </div>
+
+        @if (draftForm.type === 'NOTA_CREDITO' || draftForm.type === 'NOTA_DEBITO') {
+          <div class="sm:col-span-4 border-t border-slate-200 pt-3">
+            <label for="draft-related-ref" class="block font-bold text-slate-700 mb-1">
+              Documento de Referencia que Modifica (Serie-Número) <span class="text-rose-500">*</span>
+            </label>
+            <input
+              id="draft-related-ref"
+              type="text"
+              [(ngModel)]="draftForm.relatedDocumentReference"
+              placeholder="Ej. F001-0004821"
+              class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 font-mono font-bold text-slate-900 focus:border-orange-500 focus:outline-none"
+            />
+          </div>
+        }
+      </div>
+
+      <!-- Líneas de Detalle -->
+      <div class="border border-slate-200 rounded-2xl p-4 bg-white space-y-3">
+        <div class="flex items-center justify-between">
+          <h4 class="font-bold text-slate-900 uppercase text-[11px] tracking-wider">
+            Líneas del Comprobante
+          </h4>
+          <ui-button variant="outline" size="xs" (clicked)="addLine()">
+            <ui-icon name="plus" size="0.9rem" />
+            Agregar Línea
+          </ui-button>
+        </div>
+
+        <div class="space-y-2">
+          @for (line of draftForm.lines; track $index) {
+            <div class="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+              <div class="col-span-6">
+                <input
+                  type="text"
+                  [(ngModel)]="line.description"
+                  placeholder="Descripción del ítem o servicio..."
+                  class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-slate-900 focus:border-orange-500 focus:outline-none"
+                />
+              </div>
+              <div class="col-span-2">
+                <input
+                  type="number"
+                  min="1"
+                  [(ngModel)]="line.quantity"
+                  placeholder="Cant"
+                  class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 font-mono text-center text-slate-900 focus:border-orange-500 focus:outline-none"
+                />
+              </div>
+              <div class="col-span-3">
+                <input
+                  type="number"
+                  step="0.10"
+                  min="0"
+                  [(ngModel)]="line.unitPrice"
+                  placeholder="Precio Unit."
+                  class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 font-mono text-right text-slate-900 focus:border-orange-500 focus:outline-none"
+                />
+              </div>
+              <div class="col-span-1 text-center">
+                <button
+                  type="button"
+                  (click)="removeLine($index)"
+                  class="text-rose-500 hover:text-rose-700 p-1"
+                >
+                  <ui-icon name="trash" size="1rem" />
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+          <span class="text-xs font-bold text-slate-600">Importe Total Estimado:</span>
+          <span class="font-mono text-lg font-extrabold text-slate-900">
+            S/ {{ formLinesTotal() | number: '1.2-2' }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div slot="footer" class="flex items-center justify-end gap-2">
+      <ui-button variant="ghost" size="sm" (clicked)="formVisible.set(false)">Cancelar</ui-button>
+      <ui-button variant="primary" size="sm" (clicked)="saveDraft()">
+        Guardar Borrador
+      </ui-button>
+    </div>
+  </ui-modal>
+
+  <!-- Modal Detalle Comprobante -->
+  <ui-modal [(open)]="detailModalOpen" title="Detalle de Comprobante Electrónico" size="lg">
+    @if (selectedDoc(); as doc) {
+      <div class="space-y-4 text-xs">
+        <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+          <div>
+            <span class="font-bold text-slate-500 uppercase tracking-wider block text-[10px]">
+              {{ documentTypeLabel(doc.type) }}
+            </span>
+            <div class="text-lg font-extrabold text-slate-900">{{ doc.draftReference }}</div>
+            <div class="text-slate-500 font-mono text-[11px] mt-0.5">
+              F. Emisión: {{ doc.issueDate }} • Creado por: {{ doc.createdBy }}
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="block text-[10px] text-slate-500 uppercase tracking-wider">Estado</span>
+            <span class="px-2.5 py-1 rounded text-xs font-extrabold border bg-teal-50 text-teal-800 border-teal-200">
+              {{ doc.status }}
+            </span>
+          </div>
+        </div>
+
+        <div class="rounded-xl border border-slate-200 p-3 bg-slate-50">
+          <div class="font-bold text-slate-800">{{ doc.customer.name }}</div>
+          <div class="text-slate-600 font-mono text-[11px]">
+            {{ doc.customer.identityType }}: {{ doc.customer.identityNumber }}
+          </div>
+          <div class="text-slate-500 text-[11px]">{{ doc.customer.address }}</div>
+        </div>
+
+        <div class="rounded-xl border border-slate-200 overflow-hidden">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-100 text-slate-600 font-extrabold border-b border-slate-200">
+              <tr>
+                <th class="py-2 px-3">Descripción</th>
+                <th class="py-2 px-3 text-center">Cant</th>
+                <th class="py-2 px-3 text-right">Precio Unit.</th>
+                <th class="py-2 px-3 text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (line of doc.lines; track $index) {
+                <tr>
+                  <td class="py-2 px-3 font-medium text-slate-900">{{ line.description }}</td>
+                  <td class="py-2 px-3 text-center font-mono font-bold">{{ line.quantity }}</td>
+                  <td class="py-2 px-3 text-right font-mono">S/ {{ line.unitPrice | number: '1.2-2' }}</td>
+                  <td class="py-2 px-3 text-right font-mono font-bold">
+                    S/ {{ (line.quantity * line.unitPrice) | number: '1.2-2' }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          <div class="p-3 bg-slate-50 border-t border-slate-200 flex justify-between items-center">
+            <span class="font-bold text-slate-700 uppercase text-[10px]">Total Comprobante</span>
+            <span class="font-mono text-base font-extrabold text-slate-900">
+              S/ {{ getDocumentTotal(doc) | number: '1.2-2' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <div slot="footer" class="flex items-center justify-end">
+      <ui-button variant="ghost" size="sm" (clicked)="detailModalOpen.set(false)">Cerrar</ui-button>
+    </div>
+  </ui-modal>
+</div>

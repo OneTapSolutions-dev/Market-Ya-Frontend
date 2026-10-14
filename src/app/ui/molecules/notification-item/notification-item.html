@@ -1,0 +1,32 @@
+<div
+  role="button"
+  tabindex="0"
+  class="flex items-start gap-3 px-4 py-3 border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors select-none text-left"
+  [class.bg-orange-50]="!read()"
+  [class]="customClass()"
+  (click)="itemClicked.emit()"
+  (keydown.enter)="itemClicked.emit()"
+>
+  <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0 mt-0.5" [class]="iconContainerClass()">
+    <ui-icon [name]="iconName()" size="1.125rem" />
+  </div>
+
+  <div class="flex-1 min-w-0">
+    <div class="flex justify-between items-start gap-2">
+      <p class="text-xs font-bold leading-tight" [class.text-slate-900]="!read()" [class.text-slate-600]="read()">
+        {{ title() }}
+      </p>
+      @if (!read()) {
+        <span class="w-2 h-2 rounded-full bg-primary shrink-0 mt-1" aria-label="No leída"></span>
+      }
+    </div>
+
+    <p class="text-[11px] text-slate-500 mt-0.5 leading-snug line-clamp-2">
+      {{ message() }}
+    </p>
+
+    <p class="text-[10px] font-medium text-slate-400 mt-1">
+      {{ timestamp() | date:'shortTime' }}
+    </p>
+  </div>
+</div>

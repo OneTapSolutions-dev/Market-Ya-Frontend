@@ -1,0 +1,31 @@
+<div
+  class="flex items-center gap-2 px-3.5 py-1.5 bg-slate-50 border border-slate-300 rounded-xl focus-within:bg-white focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20 transition-all w-full"
+  [class]="customClass()"
+>
+  @if (scannerActive()) {
+    <ui-icon name="qrCode" size="1.25rem" class="text-primary shrink-0" />
+  } @else {
+    <ui-icon name="search" size="1.25rem" class="text-slate-400 shrink-0" />
+  }
+
+  <input
+    type="text"
+    class="min-h-9 w-full border-0 bg-transparent p-0 text-sm font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-0"
+    [value]="value()"
+    [placeholder]="placeholder()"
+    aria-label="Buscar producto"
+    (input)="onInput($event)"
+    (keyup.enter)="onSearch()"
+  />
+
+  @if (value()) {
+    <button
+      type="button"
+      class="p-1 text-slate-400 hover:text-slate-600 rounded-lg cursor-pointer"
+      aria-label="Limpiar búsqueda"
+      (click)="onClear()"
+    >
+      <ui-icon name="close" size="1rem" />
+    </button>
+  }
+</div>

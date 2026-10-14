@@ -1,0 +1,200 @@
+<ui-modal [(open)]="open" title="Completar Cobro y Emisión" size="xl">
+  <div class="space-y-4 text-xs">
+    <!-- Selector de Tipo de Comprobante -->
+    <div>
+      <label class="block font-bold text-slate-700 mb-1.5">Tipo de Comprobante SUNAT</label>
+      <div class="grid grid-cols-3 gap-2">
+        <button
+          type="button"
+          (click)="setDocumentType('BOLETA')"
+          [class]="documentType() === 'BOLETA'
+            ? 'p-2.5 rounded-xl border-2 border-primary bg-orange-50 text-primary font-extrabold flex items-center justify-center gap-1.5'
+            : 'p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center gap-1.5'"
+        >
+          <ui-icon name="documentText" size="1rem" />
+          <span>Boleta</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="setDocumentType('FACTURA')"
+          [class]="documentType() === 'FACTURA'
+            ? 'p-2.5 rounded-xl border-2 border-primary bg-orange-50 text-primary font-extrabold flex items-center justify-center gap-1.5'
+            : 'p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center gap-1.5'"
+        >
+          <ui-icon name="buildingOffice" size="1rem" />
+          <span>Factura</span>
+        </button>
+
+        <button
+          type="button"
+          (click)="setDocumentType('NOTA_VENTA')"
+          [class]="documentType() === 'NOTA_VENTA'
+            ? 'p-2.5 rounded-xl border-2 border-primary bg-orange-50 text-primary font-extrabold flex items-center justify-center gap-1.5'
+            : 'p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 font-bold hover:bg-slate-100 flex items-center justify-center gap-1.5'"
+        >
+          <ui-icon name="documentText" size="1rem" />
+          <span>Nota de Venta</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Datos del Cliente -->
+    <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3 space-y-3">
+      <h4 class="font-extrabold text-slate-900 text-xs">Datos del Cliente</h4>
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">Doc.</label>
+          <ui-select [value]="docType()" (valueChange)="docType.set($any($event))">
+            <option value="DNI">DNI</option>
+            <option value="RUC">RUC</option>
+            <option value="VARIO">Sin Doc.</option>
+          </ui-select>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">Número</label>
+          <ui-input
+            type="text"
+            placeholder="Ej: 47891234"
+            [value]="docNumber()"
+            (inputChange)="docNumber.set($event)"
+          />
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-slate-600 mb-1">Nombre o Razón Social</label>
+          <ui-input
+            type="text"
+            placeholder="Cliente Varios"
+            [value]="customerName()"
+            (inputChange)="customerName.set($event)"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Medio de Pago -->
+    <div>
+      <label class="block font-bold text-slate-700 mb-1.5">Medio de Pago</label>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <button
+          type="button"
+          (click)="paymentMethod.set('EFECTIVO')"
+          [class]="paymentMethod() === 'EFECTIVO'
+            ? 'p-2.5 rounded-xl border-2 border-primary bg-orange-50 text-primary font-extrabold text-center'
+            : 'p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 font-bold hover:bg-slate-100 text-center'"
+        >
+          Efectivo
+        </button>
+        <button
+          type="button"
+          (click)="paymentMethod.set('YAPE')"
+          [class]="paymentMethod() === 'YAPE'
+            ? 'p-2.5 rounded-xl border-2 border-primary bg-orange-50 text-primary font-extrabold text-center'
+            : 'p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 font-bold hover:bg-slate-100 text-center'"
+        >
+          Yape
+        </button>
+        <button
+          type="button"
+          (click)="paymentMethod.set('PLIN')"
+          [class]="paymentMethod() === 'PLIN'
+            ? 'p-2.5 rounded-xl border-2 border-primary bg-orange-50 text-primary font-extrabold text-center'
+            : 'p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 font-bold hover:bg-slate-100 text-center'"
+        >
+          Plin
+        </button>
+        <button
+          type="button"
+          (click)="paymentMethod.set('TARJETA')"
+          [class]="paymentMethod() === 'TARJETA'
+            ? 'p-2.5 rounded-xl border-2 border-primary bg-orange-50 text-primary font-extrabold text-center'
+            : 'p-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 font-bold hover:bg-slate-100 text-center'"
+        >
+          Tarjeta
+        </button>
+      </div>
+    </div>
+
+    <!-- Calculadora de Efectivo y Vuelto -->
+    @if (paymentMethod() === 'EFECTIVO') {
+      <div class="rounded-2xl border border-amber-200 bg-amber-50/50 p-3 space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-slate-700">Monto Entregado (Efectivo):</span>
+          <div class="flex gap-1.5">
+            <button
+              type="button"
+              class="px-2 py-1 rounded-lg bg-white border border-slate-300 font-mono text-[10px] font-bold hover:bg-slate-100"
+              (click)="setExactAmount()"
+            >
+              Exacto
+            </button>
+            <button
+              type="button"
+              class="px-2 py-1 rounded-lg bg-white border border-slate-300 font-mono text-[10px] font-bold hover:bg-slate-100"
+              (click)="addAmount(10)"
+            >
+              +10
+            </button>
+            <button
+              type="button"
+              class="px-2 py-1 rounded-lg bg-white border border-slate-300 font-mono text-[10px] font-bold hover:bg-slate-100"
+              (click)="addAmount(20)"
+            >
+              +20
+            </button>
+            <button
+              type="button"
+              class="px-2 py-1 rounded-lg bg-white border border-slate-300 font-mono text-[10px] font-bold hover:bg-slate-100"
+              (click)="addAmount(50)"
+            >
+              +50
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 items-center pt-1">
+          <div>
+            <ui-input
+              type="number"
+              placeholder="0.00"
+              [value]="amountPaid()"
+              (inputChange)="amountPaid.set(+$event)"
+            />
+          </div>
+
+          <div class="text-right">
+            <span class="block text-[11px] text-slate-500 font-bold">Vuelto:</span>
+            <span class="text-lg font-mono font-extrabold text-teal-700">
+              S/ {{ changeAmount() | number:'1.2-2' }}
+            </span>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Total a Cobrar Resumen -->
+    <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-900 text-white">
+      <span class="text-sm font-bold">TOTAL A COBRAR:</span>
+      <span class="text-xl font-mono font-black text-amber-400">S/ {{ total() | number:'1.2-2' }}</span>
+    </div>
+  </div>
+
+  <div modal-actions class="flex items-center justify-end gap-2 w-full">
+    <ui-button variant="ghost" (clicked)="open.set(false)">
+      Cancelar
+    </ui-button>
+    <ui-button
+      variant="primary"
+      size="md"
+      [disabled]="!isPaymentSufficient()"
+      (clicked)="confirmSale()"
+    >
+      <div class="flex items-center gap-1.5 font-extrabold">
+        <ui-icon name="checkCircle" size="1.125rem" />
+        <span>Confirmar Venta y Emitir</span>
+      </div>
+    </ui-button>
+  </div>
+</ui-modal>

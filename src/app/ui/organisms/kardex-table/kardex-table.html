@@ -1,0 +1,152 @@
+<div class="space-y-4">
+  <!-- Filtros Superiores de Inventario -->
+  <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-4 rounded-3xl border border-slate-200 shadow-xs">
+    <div class="flex-1 max-w-md">
+      <ui-search-bar
+        [(value)]="searchQuery"
+        placeholder="Buscar por SKU, nombre o código de barras…"
+      />
+    </div>
+
+    <div class="flex items-center gap-2 flex-wrap">
+      <div class="w-40">
+        <ui-select
+          [value]="selectedCategory()"
+          ariaLabel="Filtrar por categoría"
+          (valueChange)="selectedCategory.set($event)"
+        >
+          <option value="">Todas las Categorías</option>
+          @for (cat of categories(); track cat) {
+            <option [value]="cat">{{ cat }}</option>
+          }
+        </ui-select>
+      </div>
+
+      <div class="w-36">
+        <ui-select
+          [value]="selectedStatus()"
+          ariaLabel="Filtrar por estado"
+          (valueChange)="selectedStatus.set($event)"
+        >
+          <option value="TODOS">Todos los Estados</option>
+          <option value="BAJO">Stock Bajo</option>
+          <option value="NORMAL">Normal</option>
+        </ui-select>
+      </div>
+
+      <ui-button variant="primary" (clicked)="newProductRequested.emit()">
+        <div class="flex items-center gap-1.5 font-extrabold text-xs">
+          <ui-icon name="plus" size="1rem" />
+          <span>Nuevo Producto</span>
+        </div>
+      </ui-button>
+    </div>
+  </div>
+
+  <!-- Tabla Doble Kardex -->
+  <div class="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden select-none">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-xs text-slate-700">
+        <thead class="bg-slate-50 text-slate-500 font-extrabold uppercase text-[10px] border-b border-slate-200">
+          <tr>
+            <th class="py-3 px-4">SKU / Barras</th>
+            <th class="py-3 px-4">Producto</th>
+            <th class="py-3 px-4">Categoría</th>
+            <th class="py-3 px-4 text-center">Almacén (Bodega)</th>
+            <th class="py-3 px-4 text-center">Góndola (Exhibición)</th>
+            <th class="py-3 px-4 text-right">Precio Venta</th>
+            <th class="py-3 px-4 text-center">Estado</th>
+            <th class="py-3 px-4 text-right">Acción</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100" [attr.aria-busy]="loading() ? 'true' : null">
+          @if (loading()) {
+            @for (i of [1, 2, 3, 4, 5]; track i) {
+              <tr class="animate-pulse">
+                <td class="py-3.5 px-4"><div class="h-4 bg-slate-200 rounded w-20"></div></td>
+                <td class="py-3.5 px-4"><div class="h-4 bg-slate-200 rounded w-40"></div></td>
+                <td class="py-3.5 px-4"><div class="h-4 bg-slate-200 rounded w-24"></div></td>
+                <td class="py-3.5 px-4 text-center"><div class="h-6 bg-slate-200 rounded-lg w-16 mx-auto"></div></td>
+                <td class="py-3.5 px-4 text-center"><div class="h-6 bg-slate-200 rounded-lg w-16 mx-auto"></div></td>
+                <td class="py-3.5 px-4 text-right"><div class="h-4 bg-slate-200 rounded w-16 ml-auto"></div></td>
+                <td class="py-3.5 px-4 text-center"><div class="h-5 bg-slate-200 rounded-full w-20 mx-auto"></div></td>
+                <td class="py-3.5 px-4 text-right"><div class="h-7 bg-slate-200 rounded-lg w-24 ml-auto"></div></td>
+              </tr>
+            }
+          } @else {
+            @for (prod of filteredProducts(); track prod.id) {
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="py-3 px-4 font-mono font-bold text-slate-600">
+                  <div>{{ prod.sku }}</div>
+                  <div class="text-[10px] text-slate-400">{{ prod.barcode }}</div>
+                </td>
+                <td class="py-3 px-4 font-extrabold text-slate-900">
+                  {{ prod.name }}
+                </td>
+                <td class="py-3 px-4 text-slate-600">
+                  {{ prod.category }}
+                </td>
+                <td class="py-3 px-4 text-center font-mono font-bold text-slate-700">
+                  <span class="px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200">
+                    {{ prod.stockAlmacen }} unds
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-center font-mono font-extrabold">
+                  <span
+                    class="px-2.5 py-1 rounded-lg border"
+                    [class.bg-amber-50]="prod.stockGondola <= prod.minGondola"
+                    [class.text-amber-700]="prod.stockGondola <= prod.minGondola"
+                    [class.border-amber-200]="prod.stockGondola <= prod.minGondola"
+                    [class.bg-teal-50]="prod.stockGondola > prod.minGondola"
+                    [class.text-teal-700]="prod.stockGondola > prod.minGondola"
+                    [class.border-teal-200]="prod.stockGondola > prod.minGondola"
+                  >
+                    {{ prod.stockGondola }} unds
+                  </span>
+                </td>
+                <td class="py-3 px-4 text-right font-mono font-extrabold text-slate-900">
+                  S/ {{ prod.salePrice | number:'1.2-2' }}
+                </td>
+                <td class="py-3 px-4 text-center">
+                  @if (prod.stockGondola <= prod.minGondola) {
+                    <ui-badge variant="warning" size="xs">Stock Bajo</ui-badge>
+                  } @else {
+                    <ui-badge variant="success" size="xs">Normal</ui-badge>
+                  }
+                </td>
+                <td class="py-3 px-4 text-right">
+                  <div class="flex items-center justify-end gap-1.5">
+                    <button
+                      type="button"
+                      title="Ver detalle del producto"
+                      [attr.aria-label]="'Ver detalle de ' + prod.name"
+                      class="p-1.5 rounded-lg text-slate-400 hover:text-primary hover:bg-orange-50 transition-all cursor-pointer"
+                      (click)="detailRequested.emit(prod)"
+                    >
+                      <ui-icon name="eye" size="1rem" />
+                    </button>
+                    <button
+                      type="button"
+                      title="Trasladar mercadería a góndola"
+                      class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-orange-50 text-primary hover:bg-primary hover:text-white text-[11px] font-bold transition-all cursor-pointer"
+                      (click)="transferRequested.emit(prod)"
+                    >
+                      <ui-icon name="arrowsRightLeft" size="0.875rem" />
+                      <span>Trasladar</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="8" class="py-12 text-center text-slate-400">
+                  No se encontraron productos que coincidan con los filtros aplicados.
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
